@@ -1,0 +1,4 @@
+name: BlueAPI
+main: net.blueva.api.Main
+version: 1.0.0
+description: Library for Blueva plugins
