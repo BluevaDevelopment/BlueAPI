@@ -1,4 +1,5 @@
 # BlueAPI - Plugin Library for Blueva and Other Developers
+[![](https://jitpack.io/v/BluevaDevelopment/BlueAPI.svg)](https://jitpack.io/#BluevaDevelopment/BlueAPI)
 
 Welcome to BlueAPI, the ultimate tool for powering up your plugins in the Minecraft universe! This library has been specifically designed to work with plugins developed by Blueva and other developers, providing a wide range of features and tools that will ease the creation and enhancement of your projects.
 
