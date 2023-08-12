@@ -1,4 +1,5 @@
 name: BlueAPI
 main: net.blueva.api.Main
-version: 1.0.0
+version: 1.0.2
 description: Library for Blueva plugins
+api-version: 1.13

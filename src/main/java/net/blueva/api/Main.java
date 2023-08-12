@@ -21,7 +21,7 @@ public class Main extends JavaPlugin {
         Bukkit.getConsoleSender().sendMessage("");
         Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "BlueAPI | V. " + pluginversion + " | blueva.net");
 
-        settingsFile = new ConfigManager("settings.yml", getDataFolder(), this);
+        settingsFile = new ConfigManager("settings.yml", getDataFolder(), this.getClass());
         settingsFile.registerConfig();
 
         if(settingsFile.getConfig().getBoolean("metrics")) {
