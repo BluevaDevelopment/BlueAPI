@@ -19,4 +19,14 @@ public final class Scoreboards {
     public static BfScoreboard create(Player player) {
         return new BfScoreboard(player);
     }
+
+    /**
+     * Creates a scoreboard through the Adventure-independent string API.
+     *
+     * @param player the scoreboard owner
+     * @return the created scoreboard handle
+     */
+    public static BfScoreboardHandle createHandle(Player player) {
+        return new BfScoreboard(player);
+    }
 }

@@ -144,5 +144,10 @@ public final class BlueFoundation {
         public static net.blueva.foundation.scoreboard.BfScoreboard create(org.bukkit.entity.Player player) {
             return net.blueva.foundation.scoreboard.Scoreboards.create(player);
         }
+
+        public static net.blueva.foundation.scoreboard.BfScoreboardHandle createHandle(
+                org.bukkit.entity.Player player) {
+            return net.blueva.foundation.scoreboard.Scoreboards.createHandle(player);
+        }
     }
 }

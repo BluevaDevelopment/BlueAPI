@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * <p>Multiversion support from Minecraft 1.8 to 1.26.2, with native Adventure
  * parsing on Paper and BlueFoundation's own MiniMessage parser on Spigot.</p>
  */
-public final class BfScoreboard {
+public final class BfScoreboard implements BfScoreboardHandle {
 
     private final Player player;
     private final String id;
