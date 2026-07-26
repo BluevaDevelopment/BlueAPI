@@ -15,3 +15,20 @@ Known renames are covered out of the box (TNT, item drops, minecart variants, le
 ```java
 EntityType tntType = BlueFoundation.Entities.require("TNT"); // resolves PRIMED_TNT on legacy servers
 ```
+
+## Per-viewer entity glow
+
+Create one glow manager for your plugin, reuse it for every update, and close it
+when the plugin disables:
+
+```java
+GlowManager glows = BlueFoundation.Entities.createGlowManager(plugin);
+
+glows.setGlowing(target, viewer, ChatColor.RED);
+glows.unsetGlowing(target, viewer);
+
+glows.close();
+```
+
+The effect and its color are client-side for the selected viewer. Other players
+do not see it, and normal entity metadata changes do not remove it.

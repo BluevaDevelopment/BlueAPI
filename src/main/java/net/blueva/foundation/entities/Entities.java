@@ -3,6 +3,7 @@ package net.blueva.foundation.entities;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.plugin.Plugin;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -99,6 +100,16 @@ public class Entities {
             return null;
         }
         return entityClass.cast(entity);
+    }
+
+    /**
+     * Creates a lifecycle-aware manager for per-viewer colored entity glow.
+     *
+     * @param plugin plugin that owns the manager and its listeners
+     * @return a new glow manager
+     */
+    public static GlowManager createGlowManager(Plugin plugin) {
+        return new EntityGlowManager(plugin);
     }
 
     private static EntityType matchOne(String name) {
