@@ -72,6 +72,16 @@ public final class BlueFoundation {
         }
     }
 
+    public static class Music {
+        private Music() {
+        }
+
+        public static net.blueva.foundation.music.MusicManager create(
+                org.bukkit.plugin.Plugin plugin) {
+            return new net.blueva.foundation.music.MusicManager(plugin);
+        }
+    }
+
     public static class Entities extends net.blueva.foundation.entities.Entities {
         private Entities() {
         }

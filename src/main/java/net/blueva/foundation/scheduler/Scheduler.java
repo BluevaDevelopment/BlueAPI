@@ -24,6 +24,13 @@ public class Scheduler {
     protected Scheduler() {
     }
 
+    /**
+     * Returns whether the active server exposes Folia's region schedulers.
+     */
+    public static boolean isFoliaRuntime() {
+        return FOLIA.available();
+    }
+
     public static Task sync(Plugin plugin, Runnable runnable) {
         require(plugin, runnable);
         return FOLIA.available()

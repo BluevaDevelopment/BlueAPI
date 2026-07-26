@@ -38,6 +38,7 @@ BlueFoundation.Reflection
 BlueFoundation.Materials
 BlueFoundation.Items
 BlueFoundation.Sounds
+BlueFoundation.Music
 BlueFoundation.Entities
 BlueFoundation.Scheduler
 BlueFoundation.Commands
@@ -55,6 +56,7 @@ BlueFoundation.Scoreboards
 - [Version utilities](docs/version.md) — `BlueFoundation.Version`
 - [Reflection helpers](docs/reflection.md) — `BlueFoundation.Reflection`
 - [Materials and sounds](docs/materials-sounds.md) — `BlueFoundation.Materials`, `BlueFoundation.Sounds`
+- [Music](docs/music.md) — `BlueFoundation.Music`
 - [Entities](docs/entities.md) — `BlueFoundation.Entities`
 - [Items](docs/items.md) — `BlueFoundation.Items`
 - [Text and messages](docs/text-messages.md) — `BlueFoundation.Text`, `BlueFoundation.Messages`
