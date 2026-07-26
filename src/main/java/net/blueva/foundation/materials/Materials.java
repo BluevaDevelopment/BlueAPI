@@ -2,7 +2,6 @@ package net.blueva.foundation.materials;
 
 import org.bukkit.Material;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /** Multi-version material helpers. */
@@ -46,15 +45,6 @@ public class Materials {
             return null;
         }
         String normalized = name.trim().toUpperCase().replace(' ', '_').replace('-', '_');
-
-        try {
-            Method method = Material.class.getMethod("matchMaterial", String.class, boolean.class);
-            Object result = method.invoke(null, normalized, true);
-            if (result instanceof Material) {
-                return (Material) result;
-            }
-        } catch (Throwable ignored) {
-        }
 
         try {
             Material material = Material.matchMaterial(normalized);
