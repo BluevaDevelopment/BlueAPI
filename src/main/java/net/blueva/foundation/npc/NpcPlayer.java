@@ -90,6 +90,7 @@ final class NpcPlayer {
             createAndSetPacketListener(serverPlayer, connection, profile);
             setField(serverPlayer, "listed", false);
             setLocation(serverPlayer, location);
+            NpcPackets.applyDefaultSkinLayers(serverPlayer);
             return serverPlayer;
         } catch (Throwable ignored) {
             return null;

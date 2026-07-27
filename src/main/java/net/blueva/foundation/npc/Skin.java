@@ -225,10 +225,10 @@ public final class Skin {
                 return constructor.newInstance(id, name, propertyMap);
             }
 
-            Bukkit.getLogger().warning("[BlueFoundation-NPC] No GameProfile constructor found with (UUID, String, PropertyMap). Available constructors:");
-            for (Constructor<?> constructor : profileClass.getDeclaredConstructors()) {
-                Bukkit.getLogger().warning("[BlueFoundation-NPC]   " + constructor);
-            }
+            // Expected on servers whose GameProfile only has the (UUID, String) constructor
+            // (no PropertyMap overload) - apply() falls back to mutating the profile's
+            // properties map instead, which works fine. Not worth a WARNING per NPC.
+            log("No (UUID, String, PropertyMap) GameProfile constructor available, falling back to mutable properties.");
             return null;
         } catch (Throwable e) {
             Bukkit.getLogger().log(java.util.logging.Level.WARNING,

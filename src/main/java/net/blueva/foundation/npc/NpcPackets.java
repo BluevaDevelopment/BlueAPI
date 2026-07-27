@@ -947,6 +947,64 @@ final class NpcPackets {
         return Reflection.nmsClass("DataWatcher", "net.minecraft.network.syncher.SynchedEntityData");
     }
 
+    /**
+     * Fake NPC players are built from {@code ClientInformation.createDefault()}, which leaves
+     * the "displayed skin parts" byte at 0 (no real client ever sends its actual settings for
+     * them). That hides every skin overlay layer (jacket, hat, sleeves, pants) and only the base
+     * skin renders. This forces all layers on directly on the entity's metadata so the full skin
+     * shows, independently of whatever ClientInformation shape the current NMS version uses.
+     */
+    static void applyDefaultSkinLayers(Object serverPlayer) {
+        if (serverPlayer == null) {
+            return;
+        }
+        try {
+            Object dataWatcher = invokeEither(serverPlayer, "getEntityData", "getDataWatcher");
+            if (dataWatcher == null) {
+                return;
+            }
+            Object accessor = findSkinLayersAccessor(serverPlayer.getClass());
+            if (accessor == null) {
+                return;
+            }
+            Class<?> accessorClass = Reflection.nmsClass("DataWatcherObject",
+                    "net.minecraft.network.syncher.EntityDataAccessor");
+            if (accessorClass == null) {
+                accessorClass = accessor.getClass();
+            }
+            Method set = dataWatcher.getClass().getMethod("set", accessorClass, Object.class);
+            set.setAccessible(true);
+            // 0x7F = every skin layer bit set (cape, jacket, sleeves, pants, hat).
+            set.invoke(dataWatcher, accessor, (byte) 0x7F);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static Object findSkinLayersAccessor(Class<?> serverPlayerClass) {
+        Class<?> current = serverPlayerClass;
+        while (current != null && current != Object.class) {
+            for (Field field : current.getDeclaredFields()) {
+                if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+                String upperName = field.getName().toUpperCase(java.util.Locale.ROOT);
+                if (!upperName.contains("CUSTOMIS") && !upperName.contains("CUSTOMIZ")) {
+                    continue;
+                }
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(null);
+                    if (value != null) {
+                        return value;
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
     private static Object invokeEither(Object target, String first, String second) {
         try {
             return target.getClass().getMethod(first).invoke(target);
