@@ -967,17 +967,35 @@ final class NpcPackets {
             if (accessor == null) {
                 return;
             }
-            Class<?> accessorClass = Reflection.nmsClass("DataWatcherObject",
-                    "net.minecraft.network.syncher.EntityDataAccessor");
-            if (accessorClass == null) {
-                accessorClass = accessor.getClass();
+            Method set = findSetMethod(dataWatcher.getClass(), accessor.getClass());
+            if (set == null) {
+                return;
             }
-            Method set = dataWatcher.getClass().getMethod("set", accessorClass, Object.class);
             set.setAccessible(true);
             // 0x7F = every skin layer bit set (cape, jacket, sleeves, pants, hat).
             set.invoke(dataWatcher, accessor, (byte) 0x7F);
         } catch (Throwable ignored) {
         }
+    }
+
+    /**
+     * Looks up SynchedEntityData#set by name/arity instead of an exact parameter-type match:
+     * the accessor field's runtime class isn't guaranteed to be the same Class object the
+     * setter's signature was compiled against, and getMethod() requires exact equality, so it
+     * was silently failing (swallowed by the caller's catch-all) and leaving the layers byte at
+     * its default of 0.
+     */
+    private static Method findSetMethod(Class<?> dataWatcherClass, Class<?> accessorRuntimeClass) {
+        for (Method method : dataWatcherClass.getMethods()) {
+            if (!method.getName().equals("set")) {
+                continue;
+            }
+            Class<?>[] params = method.getParameterTypes();
+            if (params.length == 2 && params[0].isAssignableFrom(accessorRuntimeClass)) {
+                return method;
+            }
+        }
+        return null;
     }
 
     private static Object findSkinLayersAccessor(Class<?> serverPlayerClass) {

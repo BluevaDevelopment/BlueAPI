@@ -725,7 +725,10 @@ final class ConfigValues {
     static String unquote(String value) {
         String inner = value.substring(1, value.length() - 1);
         if (value.startsWith("'")) {
-            return inner;
+            // YAML single-quoted scalars escape a literal quote as '' (doubled), not backslash -
+            // this was returning the inner text verbatim, leaving stray '' pairs in values like
+            // <click:run_command:''/command''> and breaking the resulting click event downstream.
+            return inner.replace("''", "'");
         }
         StringBuilder builder = new StringBuilder();
         boolean escaped = false;
