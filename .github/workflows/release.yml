@@ -24,6 +24,9 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+          server-id: blueva-repo
+          server-username: BLUEVA_REPO_USERNAME
+          server-password: BLUEVA_REPO_SECRET
 
       # Same counter logic as the old build-local.sh: year.build, resetting
       # the build number when the year changes.
@@ -45,17 +48,23 @@ jobs:
           BUILD=$((BUILD + 1))
           REVISION="$YEAR.$BUILD"
           printf 'year=%s\nbuild=%s\n' "$YEAR" "$BUILD" > build.properties
-          # Keep the pom's default revision in sync: JitPack builds from the
-          # tag with a plain `mvn install` (no -Drevision), so this value is
-          # what BlueFoundation.version() reports for JitPack consumers.
+          # Keep the pom's default revision in sync so the installed/deployed
+          # POM reports the real version to Maven/Gradle consumers.
           sed -i "s|<revision>[^<]*</revision>|<revision>$REVISION</revision>|" pom.xml
-          # Point the README's JitPack dependency snippet at the new tag.
-          sed -i "s|<version>[^<]*</version>|<version>v$REVISION</version>|" README.md
+          # Point the README's badge and Gradle/Maven dependency snippets at the new version.
+          sed -i \
+            -e "s|version-[^-]*-blue|version-$REVISION-blue|" \
+            -e "s|net.blueva.foundation:BlueFoundation:[^\"]*|net.blueva.foundation:BlueFoundation:$REVISION|" \
+            -e "s|<version>[^<]*</version>|<version>$REVISION</version>|" \
+            README.md
           echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
           echo "Building BlueFoundation $REVISION"
 
-      - name: Build
-        run: mvn -B -Drevision="${{ steps.version.outputs.revision }}" clean package
+      - name: Build and publish to repo.blueva.net
+        env:
+          BLUEVA_REPO_USERNAME: ${{ secrets.BLUEVA_REPO_USERNAME }}
+          BLUEVA_REPO_SECRET: ${{ secrets.BLUEVA_REPO_SECRET }}
+        run: mvn -B -Drevision="${{ steps.version.outputs.revision }}" clean deploy
 
       # Pushes made with GITHUB_TOKEN don't retrigger this workflow; the
       # [skip ci] marker is extra insurance.

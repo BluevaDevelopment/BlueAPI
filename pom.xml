@@ -31,6 +31,14 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>blueva-repo</id>
+            <name>Blueva Releases</name>
+            <url>https://repo.blueva.net/releases</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <!-- Compile against the oldest Bukkit/Spigot API we want to support.
              It is provided by the server and is never embedded in BlueFoundation. -->
