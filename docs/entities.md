@@ -16,6 +16,44 @@ Known renames are covered out of the box (TNT, item drops, minecart variants, le
 EntityType tntType = BlueFoundation.Entities.require("TNT"); // resolves PRIMED_TNT on legacy servers
 ```
 
+## Entity flags
+
+Several entity flags arrived after 1.8 — `setSilent` and `setCollidable` in 1.9, `setAI` in 1.10,
+`setAware` in 1.15 — so calling them directly breaks on older servers. These resolve the setter at
+runtime and quietly do nothing where it is missing:
+
+```java
+BlueFoundation.Entities.setInvulnerable(entity, true);
+BlueFoundation.Entities.setSilent(entity, true);
+BlueFoundation.Entities.setAI(entity, false);
+BlueFoundation.Entities.setCollidable(entity, false);
+BlueFoundation.Entities.setPersistent(entity, false);
+BlueFoundation.Entities.setGlowing(entity, true);
+```
+
+Each returns whether the flag was applied. For anything not covered by a named method, `setFlag`
+and `getFlag` take the accessor name directly:
+
+```java
+BlueFoundation.Entities.setFlag(guardian, "setLaser", true);
+boolean gliding = BlueFoundation.Entities.getFlag(player, "isGliding", false);
+```
+
+`getFlag` takes the value to return when the getter does not exist, so a flag that predates the
+running version degrades to a sensible default instead of throwing.
+
+## Passengers
+
+`addPassenger` is 1.11+; before that a vehicle could only carry one passenger, through
+`setPassenger`. This uses whichever exists:
+
+```java
+BlueFoundation.Entities.addPassenger(horse, player);
+```
+
+Note there is no matching `removePassenger` helper: `Entity#eject()` has existed since 1.8 and
+drops every passenger, so use it directly when you want to clear them all.
+
 ## Per-viewer entity glow
 
 Create one glow manager for your plugin, reuse it for every update, and close it

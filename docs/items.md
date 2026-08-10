@@ -30,6 +30,43 @@ BlueFoundation.Items.editMeta(item, meta -> {
 });
 ```
 
+## Hands
+
+The off hand arrived in 1.9, and with it `getItemInMainHand`/`getItemInOffHand`; 1.8 only has
+`getItemInHand`. These pick whichever exists, for a `PlayerInventory` or any entity's
+`EntityEquipment`:
+
+```java
+ItemStack held = BlueFoundation.Items.mainHandItem(player.getInventory());
+BlueFoundation.Items.mainHandItem(player.getInventory(), item);
+
+ItemStack offHand = BlueFoundation.Items.offHandItem(player.getInventory());
+BlueFoundation.Items.offHandItem(armorStand.getEquipment(), banner);
+```
+
+`offHandItem` returns `null` on 1.8, where there is no off hand, and the setter is a no-op there.
+
+## Persistent data
+
+`PersistentDataContainer` is 1.14+ and `NamespacedKey` 1.12+, so the `pdc*` helpers take a plain
+namespace and key instead. On older servers they fall back to a custom item tag, which means a
+tagged item keeps resolving across the whole range:
+
+```java
+BlueFoundation.Items.pdcString(item, "myplugin", "item_id", "selector");
+String itemId = BlueFoundation.Items.pdcString(item, "myplugin", "item_id");
+
+BlueFoundation.Items.pdcInt(item, "myplugin", "uses", 3);
+boolean tagged = BlueFoundation.Items.pdcHas(item, "myplugin", "item_id", "STRING");
+BlueFoundation.Items.pdcRemove(item, "myplugin", "item_id");
+
+String dump = BlueFoundation.Items.pdcDebug(item, "myplugin", "item_id", "STRING");
+```
+
+The namespace/key pair produces the same key a `NamespacedKey(plugin, key)` would, so switching
+existing call sites over does not orphan items tagged by earlier builds. There is no helper to
+enumerate a container's keys — that needs the 1.14+ API — so check the specific keys you write.
+
 If your plugin already has Adventure components after placeholder processing,
 use the component overloads to avoid serializing and parsing text twice:
 

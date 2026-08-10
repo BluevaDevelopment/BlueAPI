@@ -63,6 +63,7 @@ BlueFoundation.Version
 BlueFoundation.Reflection
 BlueFoundation.Materials
 BlueFoundation.Items
+BlueFoundation.AdventureItems
 BlueFoundation.Sounds
 BlueFoundation.Music
 BlueFoundation.Entities
@@ -70,9 +71,18 @@ BlueFoundation.Scheduler
 BlueFoundation.Commands
 BlueFoundation.Messages
 BlueFoundation.Text
+BlueFoundation.AdventureText
 BlueFoundation.Events
 BlueFoundation.Configs
 BlueFoundation.NPCs
+BlueFoundation.Players
+BlueFoundation.Worlds
+BlueFoundation.Blocks
+BlueFoundation.Particles
+BlueFoundation.Attributes
+BlueFoundation.GameRules
+BlueFoundation.BossBars
+BlueFoundation.Inventories
 BlueFoundation.Scoreboards
 ```
 
@@ -92,6 +102,11 @@ BlueFoundation.Scoreboards
 - [NPCs](docs/npcs.md): `BlueFoundation.NPCs`
 - [Scoreboard](docs/scoreboards.md): `BlueFoundation.Scoreboards`
 - [Multi-version events](docs/events.md): `BlueFoundation.Events`
+- [Particles](docs/particles.md): `BlueFoundation.Particles`
+- [Attributes](docs/attributes.md): `BlueFoundation.Attributes`
+- [Game rules](docs/gamerules.md): `BlueFoundation.GameRules`
+- [Boss bars](docs/bossbars.md): `BlueFoundation.BossBars`
+- [Worlds, blocks, players and inventories](docs/world-players.md): `BlueFoundation.Worlds`, `BlueFoundation.Blocks`, `BlueFoundation.Players`, `BlueFoundation.Inventories`
 
 ## Goal
 
