@@ -2,6 +2,9 @@ package net.blueva.foundation.players;
 
 import net.blueva.foundation.npc.NPCs;
 import net.blueva.foundation.reflection.Reflection;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -209,6 +212,39 @@ public class Players {
             bukkitHidePlayer1 = Reflection.method(Player.class, "hidePlayer", Player.class);
             bukkitShowPlayer1 = Reflection.method(Player.class, "showPlayer", Player.class);
             visibilityResolved = true;
+        }
+    }
+
+    /**
+     * The block a player is looking at, or {@code null} when there is none within range.
+     *
+     * <p>Uses {@code getTargetBlockExact} on 1.13+ so modern behaviour is unchanged, and falls
+     * back to {@code getTargetBlock(Set, int)} - present since 1.8 - elsewhere, treating an air
+     * result as "nothing hit" to match the modern contract.</p>
+     *
+     * @param player      the player (may be {@code null})
+     * @param maxDistance how far to look
+     * @return the targeted block, or {@code null}
+     */
+    public static Block targetBlock(Player player, int maxDistance) {
+        if (player == null) {
+            return null;
+        }
+        try {
+            Method exact = Player.class.getMethod("getTargetBlockExact", int.class);
+            Object block = exact.invoke(player, maxDistance);
+            return block instanceof Block ? (Block) block : null;
+        } catch (Throwable ignored) {
+            // pre-1.13
+        }
+        try {
+            Block block = player.getTargetBlock((Set<Material>) null, maxDistance);
+            if (block == null || "AIR".equals(block.getType().name())) {
+                return null;
+            }
+            return block;
+        } catch (Throwable ignored) {
+            return null;
         }
     }
 }

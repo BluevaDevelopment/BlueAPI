@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -130,6 +131,83 @@ public class Items {
             return null;
         }
         return (ItemStack) HandAccess.invoke(HandAccess.OFF_GET, inventory);
+    }
+
+    /**
+     * Main-hand item of any entity's equipment, not just a player inventory. Uses
+     * {@code getItemInMainHand} on 1.9+ and falls back to {@code getItemInHand} on 1.8.x.
+     *
+     * @param equipment the equipment (may be {@code null})
+     * @return the item, or {@code null}
+     */
+    public static ItemStack mainHandItem(EntityEquipment equipment) {
+        if (equipment == null) {
+            return null;
+        }
+        Object item = invokeEquipment(equipment, "getItemInMainHand", "getItemInHand");
+        return item instanceof ItemStack ? (ItemStack) item : null;
+    }
+
+    /**
+     * Sets the main-hand item on any entity's equipment across all supported versions.
+     *
+     * @param equipment the equipment (may be {@code null})
+     * @param item      the item to set
+     * @return the same equipment, for chaining
+     */
+    public static EntityEquipment mainHandItem(EntityEquipment equipment, ItemStack item) {
+        if (equipment != null) {
+            invokeEquipment(equipment, item, "setItemInMainHand", "setItemInHand");
+        }
+        return equipment;
+    }
+
+    /**
+     * Off-hand item of any entity's equipment, or {@code null} on 1.8.x where no off hand exists.
+     *
+     * @param equipment the equipment (may be {@code null})
+     * @return the item, or {@code null}
+     */
+    public static ItemStack offHandItem(EntityEquipment equipment) {
+        if (equipment == null) {
+            return null;
+        }
+        Object item = invokeEquipment(equipment, "getItemInOffHand");
+        return item instanceof ItemStack ? (ItemStack) item : null;
+    }
+
+    /**
+     * Sets the off-hand item where supported; no-op on 1.8.x servers.
+     *
+     * @param equipment the equipment (may be {@code null})
+     * @param item      the item to set
+     * @return the same equipment, for chaining
+     */
+    public static EntityEquipment offHandItem(EntityEquipment equipment, ItemStack item) {
+        if (equipment != null) {
+            invokeEquipment(equipment, item, "setItemInOffHand");
+        }
+        return equipment;
+    }
+
+    private static Object invokeEquipment(EntityEquipment equipment, String... names) {
+        for (String name : names) {
+            try {
+                return equipment.getClass().getMethod(name).invoke(equipment);
+            } catch (Throwable ignored) {
+            }
+        }
+        return null;
+    }
+
+    private static void invokeEquipment(EntityEquipment equipment, ItemStack item, String... names) {
+        for (String name : names) {
+            try {
+                equipment.getClass().getMethod(name, ItemStack.class).invoke(equipment, item);
+                return;
+            } catch (Throwable ignored) {
+            }
+        }
     }
 
     /** Sets the off-hand item where supported; no-op on 1.8.x servers. */
@@ -442,6 +520,20 @@ public class Items {
         return value instanceof Byte ? Boolean.valueOf(((Byte) value).byteValue() != 0) : null;
     }
 
+
+    /**
+     * String-keyed variant of {@link #pdcDebug(ItemStack, Object, String)}, for callers that
+     * cannot hold a {@code NamespacedKey} because the type is missing before 1.12.
+     *
+     * @param item      the item to inspect
+     * @param namespace key namespace
+     * @param key       key name
+     * @param typeName  persistent data type name, e.g. {@code STRING}
+     * @return a human-readable dump of what is stored under that key
+     */
+    public static String pdcDebug(ItemStack item, String namespace, String key, String typeName) {
+        return pdcDebug(item, namespacedKey(namespace, key), typeName);
+    }
 
     public static String pdcDebug(ItemStack item, Object namespacedKey, String typeName) {
         StringBuilder debug = new StringBuilder();

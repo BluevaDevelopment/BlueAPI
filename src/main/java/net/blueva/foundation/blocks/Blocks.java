@@ -53,4 +53,32 @@ public class Blocks {
             passableResolved = true;
         }
     }
+
+    /**
+     * Serialises a block's state to a string, on any server version.
+     *
+     * <p>1.13+ returns {@code BlockData#getAsString()}, the canonical form the matching restore
+     * path expects. Older servers have no BlockData at all, so this falls back to the namespaced
+     * material name, which is the most a legacy snapshot can carry.</p>
+     *
+     * @param block the block (may be {@code null})
+     * @return the serialised state, or {@code null} when there is no block
+     */
+    public static String serialize(Block block) {
+        if (block == null) {
+            return null;
+        }
+        try {
+            Object data = Block.class.getMethod("getBlockData").invoke(block);
+            if (data != null) {
+                Object value = data.getClass().getMethod("getAsString").invoke(data);
+                if (value instanceof String) {
+                    return (String) value;
+                }
+            }
+        } catch (Throwable ignored) {
+            // pre-1.13
+        }
+        return "minecraft:" + block.getType().name().toLowerCase(java.util.Locale.ROOT);
+    }
 }
