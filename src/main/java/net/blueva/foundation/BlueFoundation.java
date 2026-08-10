@@ -147,6 +147,11 @@ public final class BlueFoundation {
         }
     }
 
+    public static class Attributes extends net.blueva.foundation.attributes.Attributes {
+        private Attributes() {
+        }
+    }
+
     public static class Inventories extends net.blueva.foundation.inventories.Inventories {
         private Inventories() {
         }
