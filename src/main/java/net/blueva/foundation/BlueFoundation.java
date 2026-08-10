@@ -157,6 +157,11 @@ public final class BlueFoundation {
         }
     }
 
+    public static class BossBars extends net.blueva.foundation.bossbar.BossBars {
+        private BossBars() {
+        }
+    }
+
     public static class Inventories extends net.blueva.foundation.inventories.Inventories {
         private Inventories() {
         }
