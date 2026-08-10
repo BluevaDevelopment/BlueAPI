@@ -13,7 +13,7 @@ public class ConfigParseException extends IllegalArgumentException {
 
     public ConfigParseException(ConfigFormat format, int line, int column, String message, String source) {
         super(format + " config parse error"
-                + (source == null || source.isBlank() ? "" : " in " + source)
+                + (source == null || source.trim().isEmpty() ? "" : " in " + source)
                 + " at line " + line + ", column " + column + ": " + message);
         this.format = format;
         this.line = line;
