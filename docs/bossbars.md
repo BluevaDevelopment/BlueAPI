@@ -26,21 +26,37 @@ player's screen. Use `Messages.bossBar` for one-off notices, and `BossBars.creat
 has a lifetime:
 
 ```java
-// Wrong for a bar you refresh every tick - each call adds another bar.
+// Wrong for a bar you refresh every tick. Each call adds another bar.
 BlueFoundation.Messages.bossBar(player, title, colour, style, progress);
 
-// Right - one bar, updated in place.
+// Right. One bar, updated in place.
 BfBossBar bar = BlueFoundation.BossBars.create(title, "YELLOW", "SEGMENTED_6", 1.0);
 ```
 
-## Servers without boss bars
+## Servers without a boss bar API
 
-On 1.8 there is no boss bar API. `create` still returns a usable handle, every method is a no-op,
-and `isSupported()` tells you which situation you are in if you want to fall back to a title or a
-chat message:
+1.8 has no boss bar API, but it can still show one. That is what plugins did before 1.9. Pass a
+plugin and the bar falls back to the wither trick: an invisible wither is sent to the viewer as
+packets 90 blocks in front of them, its custom name is the title, and its health is the progress.
+The entity never exists server-side and nobody else sees it.
 
 ```java
-if (!BlueFoundation.BossBars.isSupported()) {
+BfBossBar bar = BlueFoundation.BossBars.create(plugin, "<gold>Starting", "YELLOW", "SEGMENTED_6", 1.0);
+bar.addPlayer(player);
+```
+
+The plugin is required because the wither has to be pulled along as the viewer moves, or the client
+stops tracking it and the bar vanishes. That runs as a repeating task, cancelled automatically once
+the last viewer is removed. The plugin-less `create` cannot do this and stays a no-op on 1.8.
+
+Two things behave differently on that path:
+
+- `setColor` and `setStyle` do nothing. The wither bar has a fixed appearance.
+- `isSupported()` on `BossBars` reports whether the *native* API exists, so it is `false` on 1.8
+  even when the fallback is working. Ask the bar itself instead:
+
+```java
+if (!bar.isSupported()) {
     BlueFoundation.Messages.title(player, title, "", 10, 40, 10);
 }
 ```

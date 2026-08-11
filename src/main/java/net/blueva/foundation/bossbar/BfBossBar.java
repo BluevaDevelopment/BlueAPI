@@ -10,22 +10,32 @@ import java.lang.reflect.Method;
  * {@code Messages#bossBar}.
  *
  * <p>Backed by {@code org.bukkit.boss.BossBar} (1.9+) through reflection. On 1.8 the Bukkit boss
- * bar API does not exist at all, so every method is a silent no-op and {@link #isSupported()}
- * returns {@code false}; callers keep working without a version check.</p>
+ * bar API does not exist, so the bar is drawn the way it was before that API: an invisible wither
+ * sent to the viewer as packets, whose custom name is the title and whose health is the progress
+ * (see {@link LegacyBossBar}). That path needs a plugin for its tracking task, so it only kicks in
+ * when the bar was created through the {@code Plugin}-taking overload; otherwise every method is a
+ * silent no-op there and {@link #isSupported()} returns {@code false}.</p>
  */
 public final class BfBossBar {
 
     private final Object handle;
+    private final LegacyBossBar legacy;
 
     BfBossBar(Object handle) {
         this.handle = handle;
+        this.legacy = null;
+    }
+
+    BfBossBar(LegacyBossBar legacy) {
+        this.handle = null;
+        this.legacy = legacy;
     }
 
     /**
      * @return {@code true} when the running server actually has a boss bar API
      */
     public boolean isSupported() {
-        return handle != null;
+        return handle != null || legacy != null;
     }
 
     /**
@@ -34,6 +44,10 @@ public final class BfBossBar {
      * @param title new title
      */
     public void setTitle(String title) {
+        if (legacy != null) {
+            legacy.setTitle(title);
+            return;
+        }
         invoke("setTitle", String.class, TextAdapter.legacySection(title));
     }
 
@@ -42,6 +56,10 @@ public final class BfBossBar {
      */
     public void setProgress(double progress) {
         double clamped = Math.max(0.0D, Math.min(1.0D, progress));
+        if (legacy != null) {
+            legacy.setProgress(clamped);
+            return;
+        }
         invoke("setProgress", double.class, clamped);
     }
 
@@ -49,6 +67,9 @@ public final class BfBossBar {
      * @param name a {@code BarColor} constant name, e.g. {@code YELLOW}; unknown names are ignored
      */
     public void setColor(String name) {
+        if (legacy != null) {
+            return;
+        }
         Class<?> type = BossBars.findClass("org.bukkit.boss.BarColor");
         Object color = BossBars.enumConstant("org.bukkit.boss.BarColor", name);
         if (type != null && color != null) {
@@ -60,6 +81,9 @@ public final class BfBossBar {
      * @param name a {@code BarStyle} constant name, e.g. {@code SEGMENTED_6}; unknown names are ignored
      */
     public void setStyle(String name) {
+        if (legacy != null) {
+            return;
+        }
         Class<?> type = BossBars.findClass("org.bukkit.boss.BarStyle");
         Object style = BossBars.enumConstant("org.bukkit.boss.BarStyle", name);
         if (type != null && style != null) {
@@ -71,24 +95,38 @@ public final class BfBossBar {
      * @param player player to show the bar to
      */
     public void addPlayer(Player player) {
-        if (player != null) {
-            invoke("addPlayer", Player.class, player);
+        if (player == null) {
+            return;
         }
+        if (legacy != null) {
+            legacy.addPlayer(player);
+            return;
+        }
+        invoke("addPlayer", Player.class, player);
     }
 
     /**
      * @param player player to hide the bar from
      */
     public void removePlayer(Player player) {
-        if (player != null) {
-            invoke("removePlayer", Player.class, player);
+        if (player == null) {
+            return;
         }
+        if (legacy != null) {
+            legacy.removePlayer(player);
+            return;
+        }
+        invoke("removePlayer", Player.class, player);
     }
 
     /**
      * Detaches every viewer, which is what actually makes the bar disappear.
      */
     public void removeAll() {
+        if (legacy != null) {
+            legacy.removeAll();
+            return;
+        }
         if (handle == null) {
             return;
         }

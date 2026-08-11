@@ -2,6 +2,7 @@ package net.blueva.foundation.bossbar;
 
 import net.blueva.foundation.text.TextAdapter;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
 import java.util.Locale;
@@ -12,11 +13,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * Multi-version boss bars.
  *
  * <p>{@code org.bukkit.boss.BossBar} arrived in 1.9, so nothing here may reference it at compile
- * time. {@link #create} hands back a {@link BfBossBar} that owns the real bar when the server has
- * one and silently no-ops when it does not, which keeps callers free of version branches.</p>
+ * time. {@code create} hands back a {@link BfBossBar} that owns the real bar when the server has
+ * one, which keeps callers free of version branches.</p>
+ *
+ * <p>Older servers can still show a bar through {@link #create(Plugin, String, String, String,
+ * double)}, which falls back to the pre-1.9 wither trick (see {@link LegacyBossBar}). The
+ * plugin-less overload cannot do that, because the fallback needs a repeating task, so it
+ * degrades to a no-op there instead.</p>
  *
  * <p>Unlike {@code Messages#bossBar}, which builds a throwaway bar per call, the returned handle
- * is meant to be kept and reused - repeatedly creating bars for the same player stacks them.</p>
+ * is meant to be kept and reused, since repeatedly creating bars for the same player stacks them.</p>
  */
 public class BossBars {
 
@@ -26,6 +32,33 @@ public class BossBars {
     private static volatile boolean resolved;
 
     protected BossBars() {
+    }
+
+    /**
+     * Creates a boss bar, falling back to the wither trick on servers with no boss bar API.
+     *
+     * <p>Behaves exactly like {@link #create(String, String, String, double)} on 1.9+. The
+     * difference is on older servers: passing a plugin lets them show a real bar rather than
+     * nothing, because keeping the fake entity in front of the viewer needs a repeating task.</p>
+     *
+     * @param plugin   the plugin that owns the tracking task
+     * @param title    bar text
+     * @param color    a {@code BarColor} constant name; ignored on 1.8
+     * @param style    a {@code BarStyle} constant name; ignored on 1.8
+     * @param progress fill level, clamped to 0..1
+     * @return a handle; never {@code null}
+     */
+    public static BfBossBar create(Plugin plugin, String title, String color, String style, double progress) {
+        if (!resolved) {
+            resolve();
+        }
+        if (createBossBar == null) {
+            if (plugin != null && LegacyBossBar.isAvailable()) {
+                return new BfBossBar(new LegacyBossBar(plugin, title, progress));
+            }
+            return new BfBossBar((Object) null);
+        }
+        return create(title, color, style, progress);
     }
 
     /**
@@ -52,13 +85,13 @@ public class BossBars {
             resolve();
         }
         if (createBossBar == null) {
-            return new BfBossBar(null);
+            return new BfBossBar((Object) null);
         }
 
         Object barColor = enumConstant("org.bukkit.boss.BarColor", color);
         Object barStyle = enumConstant("org.bukkit.boss.BarStyle", style);
         if (barColor == null || barStyle == null) {
-            return new BfBossBar(null);
+            return new BfBossBar((Object) null);
         }
 
         try {
@@ -67,7 +100,7 @@ public class BossBars {
             bar.setProgress(progress);
             return bar;
         } catch (Throwable ignored) {
-            return new BfBossBar(null);
+            return new BfBossBar((Object) null);
         }
     }
 
