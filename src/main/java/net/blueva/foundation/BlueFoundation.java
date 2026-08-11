@@ -19,6 +19,11 @@ public final class BlueFoundation {
     }
 
     public static String version() {
+        // Baked in at build time, so it survives being shaded into a consumer jar.
+        if (!BuildInfo.VERSION.isEmpty() && !BuildInfo.VERSION.startsWith("${")) {
+            return BuildInfo.VERSION;
+        }
+
         Package foundationPackage = BlueFoundation.class.getPackage();
         if (foundationPackage != null && foundationPackage.getImplementationVersion() != null) {
             return foundationPackage.getImplementationVersion();
