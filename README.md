@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-26.23-blue">
+  <img alt="Version" src="https://img.shields.io/badge/version-26.24-blue">
   <img alt="Java" src="https://img.shields.io/badge/Java-8+-ED8B00?logo=openjdk&logoColor=white">
   <img alt="Build" src="https://img.shields.io/badge/build-Maven-C71A36?logo=apachemaven&logoColor=white">
 </p>
@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("net.blueva.foundation:BlueFoundation:26.23")
+    compileOnly("net.blueva.foundation:BlueFoundation:26.24")
 }
 ```
 
@@ -46,7 +46,7 @@ dependencies {
     <dependency>
         <groupId>net.blueva.foundation</groupId>
         <artifactId>BlueFoundation</artifactId>
-        <version>26.23</version>
+        <version>26.24</version>
     </dependency>
 </dependencies>
 ```
