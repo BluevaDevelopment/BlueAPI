@@ -45,6 +45,9 @@ final class NpcImpl implements Npc {
     private boolean listed = false;
     private boolean lookAtClosestPlayer = false;
     private double lookAtRange = 10.0D;
+    private boolean invisible = false;
+    private boolean armorStandMarker = false;
+    private boolean armorStandNoBasePlate = false;
 
     NpcImpl(Location location, UUID uuid, String internalName, EntityType entityType) {
         this.uuid = uuid;
@@ -244,6 +247,69 @@ final class NpcImpl implements Npc {
     @Override
     public ChatColor getGlowColor() {
         return glowColor;
+    }
+
+    @Override
+    public Npc invisible(boolean invisible) {
+        this.invisible = invisible;
+        if (entityHandle != null) {
+            for (UUID viewerId : viewers) {
+                Player viewer = Bukkit.getPlayer(viewerId);
+                if (viewer != null && viewer.isOnline()) {
+                    NpcPackets.sendInvisible(viewer, entityHandle, invisible);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public boolean isInvisible() {
+        return invisible;
+    }
+
+    @Override
+    public Npc armorStandMarker(boolean marker) {
+        if (entityType != EntityType.ARMOR_STAND) {
+            return this;
+        }
+        this.armorStandMarker = marker;
+        if (entityHandle != null) {
+            for (UUID viewerId : viewers) {
+                Player viewer = Bukkit.getPlayer(viewerId);
+                if (viewer != null && viewer.isOnline()) {
+                    NpcPackets.sendArmorStandMarker(viewer, entityHandle, marker);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public boolean isArmorStandMarker() {
+        return armorStandMarker;
+    }
+
+    @Override
+    public Npc armorStandNoBasePlate(boolean noBasePlate) {
+        if (entityType != EntityType.ARMOR_STAND) {
+            return this;
+        }
+        this.armorStandNoBasePlate = noBasePlate;
+        if (entityHandle != null) {
+            for (UUID viewerId : viewers) {
+                Player viewer = Bukkit.getPlayer(viewerId);
+                if (viewer != null && viewer.isOnline()) {
+                    NpcPackets.sendArmorStandNoBasePlate(viewer, entityHandle, noBasePlate);
+                }
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public boolean hasArmorStandNoBasePlate() {
+        return armorStandNoBasePlate;
     }
 
     @Override
@@ -476,6 +542,17 @@ final class NpcImpl implements Npc {
         NpcPackets.sendHeadRotation(viewer, handle, location.getYaw());
         NpcPackets.sendScale(viewer, handle, scale);
         NpcPackets.sendGlow(viewer, handle, glowColor != null);
+        if (invisible) {
+            NpcPackets.sendInvisible(viewer, handle, true);
+        }
+        if (entityType == EntityType.ARMOR_STAND) {
+            if (armorStandMarker) {
+                NpcPackets.sendArmorStandMarker(viewer, handle, true);
+            }
+            if (armorStandNoBasePlate) {
+                NpcPackets.sendArmorStandNoBasePlate(viewer, handle, true);
+            }
+        }
         updateTeamForAll();
     }
 
