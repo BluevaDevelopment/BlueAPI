@@ -554,7 +554,8 @@ final class NpcImpl implements Npc {
     private boolean canWearEquipment() {
         return entityType == EntityType.PLAYER
                 || entityType == EntityType.SKELETON
-                || entityType == EntityType.ZOMBIE;
+                || entityType == EntityType.ZOMBIE
+                || entityType == EntityType.ARMOR_STAND;
     }
 
     private boolean canUsePose() {
