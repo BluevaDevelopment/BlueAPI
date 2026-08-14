@@ -67,6 +67,18 @@ public interface Npc {
 
     ChatColor getGlowColor();
 
+    Npc invisible(boolean invisible);
+
+    boolean isInvisible();
+
+    Npc armorStandMarker(boolean marker);
+
+    boolean isArmorStandMarker();
+
+    Npc armorStandNoBasePlate(boolean noBasePlate);
+
+    boolean hasArmorStandNoBasePlate();
+
     Npc scale(double scale);
 
     double getScale();

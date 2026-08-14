@@ -209,6 +209,41 @@ final class NpcPackets {
         sendMetadata(viewer, serverPlayer);
     }
 
+    /**
+     * Same mechanism as {@link #sendGlow}: a single shared-flags byte on the entity
+     * ({@code Entity#DATA_SHARED_FLAGS_ID}) where each bit is an independent boolean -
+     * bit 4 is invisible, bit 5 is glowing (already used by sendGlow above).
+     */
+    static void sendInvisible(Player viewer, Object serverPlayer, boolean invisible) {
+        if (serverPlayer == null) {
+            return;
+        }
+        setSharedFlag(serverPlayer, 4, invisible);
+        sendMetadata(viewer, serverPlayer);
+    }
+
+    /**
+     * ArmorStand-only client flags, a SEPARATE shared-flags byte from the generic Entity one
+     * above ({@code ArmorStand#DATA_CLIENT_FLAGS}): bit 0 = small, bit 1 = has arms, bit 2 = no
+     * base plate, bit 3 = marker. Only marker/no-base-plate are exposed for now (the two flags
+     * a simple invisible floating-item display needs).
+     */
+    static void sendArmorStandMarker(Player viewer, Object entityHandle, boolean marker) {
+        if (entityHandle == null) {
+            return;
+        }
+        setArmorStandFlag(entityHandle, 3, marker);
+        sendMetadata(viewer, entityHandle);
+    }
+
+    static void sendArmorStandNoBasePlate(Player viewer, Object entityHandle, boolean noBasePlate) {
+        if (entityHandle == null) {
+            return;
+        }
+        setArmorStandFlag(entityHandle, 2, noBasePlate);
+        sendMetadata(viewer, entityHandle);
+    }
+
     static void sendScale(Player viewer, Object serverPlayer, double scale) {
         if (serverPlayer == null || !Version.isAtLeast(1, 20, 6)) {
             return;
@@ -341,6 +376,47 @@ final class NpcPackets {
                 return;
             }
             Field accessorField = findField(entityClass, "DATA_SHARED_FLAGS_ID");
+            if (accessorField == null) {
+                return;
+            }
+            accessorField.setAccessible(true);
+            Object accessor = accessorField.get(null);
+            if (accessor == null) {
+                return;
+            }
+            Method get = findMethod(dataWatcher.getClass(), "get", accessor.getClass());
+            if (get == null) {
+                return;
+            }
+            get.setAccessible(true);
+            Byte current = (Byte) get.invoke(dataWatcher, accessor);
+            byte bits = current == null ? 0 : current;
+            int flag = 1 << flagIndex;
+            byte newBits = value ? (byte) (bits | flag) : (byte) (bits & ~flag);
+            Method set = findMethod(dataWatcher.getClass(), "set", accessor.getClass(), Object.class);
+            if (set == null) {
+                return;
+            }
+            set.setAccessible(true);
+            set.invoke(dataWatcher, accessor, newBits);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /**
+     * Same bit-flag technique as {@link #setSharedFlag}, but for {@code ArmorStand}'s own
+     * {@code DATA_CLIENT_FLAGS} accessor instead of the generic {@code Entity} one - a
+     * completely separate byte, specific to that entity class.
+     */
+    private static void setArmorStandFlag(Object entityHandle, int flagIndex, boolean value) {
+        try {
+            Object dataWatcher = invokeEither(entityHandle, "getEntityData", "getDataWatcher");
+            Class<?> armorStandClass = Reflection.nmsClass("EntityArmorStand",
+                    "net.minecraft.world.entity.decoration.ArmorStand");
+            if (armorStandClass == null) {
+                return;
+            }
+            Field accessorField = findField(armorStandClass, "DATA_CLIENT_FLAGS");
             if (accessorField == null) {
                 return;
             }
