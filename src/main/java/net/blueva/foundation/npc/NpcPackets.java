@@ -3,6 +3,7 @@ package net.blueva.foundation.npc;
 import net.blueva.foundation.npc.util.NpcPose;
 import net.blueva.foundation.reflection.Reflection;
 import net.blueva.foundation.version.Version;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -193,10 +194,10 @@ final class NpcPackets {
                 setGlowingTag.setAccessible(true);
                 setGlowingTag.invoke(serverPlayer, glowing);
             } else {
-                setSharedFlag(serverPlayer, 5, glowing);
+                setSharedFlag(serverPlayer, 6, glowing);
             }
         } catch (Throwable ignored) {
-            setSharedFlag(serverPlayer, 5, glowing);
+            setSharedFlag(serverPlayer, 6, glowing);
         }
         sendMetadata(viewer, serverPlayer);
     }
@@ -209,30 +210,30 @@ final class NpcPackets {
         sendMetadata(viewer, serverPlayer);
     }
 
-    /**
-     * Same mechanism as {@link #sendGlow}: a single shared-flags byte on the entity
-     * ({@code Entity#DATA_SHARED_FLAGS_ID}) where each bit is an independent boolean -
-     * bit 4 is invisible, bit 5 is glowing (already used by sendGlow above).
-     */
+
     static void sendInvisible(Player viewer, Object serverPlayer, boolean invisible) {
         if (serverPlayer == null) {
             return;
         }
-        setSharedFlag(serverPlayer, 4, invisible);
+        try {
+            Method setInvisible = findMethod(serverPlayer.getClass(), "setInvisible", boolean.class);
+            if (setInvisible != null) {
+                setInvisible.setAccessible(true);
+                setInvisible.invoke(serverPlayer, invisible);
+            } else {
+                setSharedFlag(serverPlayer, 5, invisible);
+            }
+        } catch (Throwable ignored) {
+            setSharedFlag(serverPlayer, 5, invisible);
+        }
         sendMetadata(viewer, serverPlayer);
     }
 
-    /**
-     * ArmorStand-only client flags, a SEPARATE shared-flags byte from the generic Entity one
-     * above ({@code ArmorStand#DATA_CLIENT_FLAGS}): bit 0 = small, bit 1 = has arms, bit 2 = no
-     * base plate, bit 3 = marker. Only marker/no-base-plate are exposed for now (the two flags
-     * a simple invisible floating-item display needs).
-     */
     static void sendArmorStandMarker(Player viewer, Object entityHandle, boolean marker) {
         if (entityHandle == null) {
             return;
         }
-        setArmorStandFlag(entityHandle, 3, marker);
+        setArmorStandFlag(entityHandle, 4, marker);
         sendMetadata(viewer, entityHandle);
     }
 
@@ -240,7 +241,7 @@ final class NpcPackets {
         if (entityHandle == null) {
             return;
         }
-        setArmorStandFlag(entityHandle, 2, noBasePlate);
+        setArmorStandFlag(entityHandle, 3, noBasePlate);
         sendMetadata(viewer, entityHandle);
     }
 
@@ -403,11 +404,6 @@ final class NpcPackets {
         }
     }
 
-    /**
-     * Same bit-flag technique as {@link #setSharedFlag}, but for {@code ArmorStand}'s own
-     * {@code DATA_CLIENT_FLAGS} accessor instead of the generic {@code Entity} one - a
-     * completely separate byte, specific to that entity class.
-     */
     private static void setArmorStandFlag(Object entityHandle, int flagIndex, boolean value) {
         try {
             Object dataWatcher = invokeEither(entityHandle, "getEntityData", "getDataWatcher");
@@ -1023,13 +1019,6 @@ final class NpcPackets {
         return Reflection.nmsClass("DataWatcher", "net.minecraft.network.syncher.SynchedEntityData");
     }
 
-    /**
-     * Fake NPC players are built from {@code ClientInformation.createDefault()}, which leaves
-     * the "displayed skin parts" byte at 0 (no real client ever sends its actual settings for
-     * them). That hides every skin overlay layer (jacket, hat, sleeves, pants) and only the base
-     * skin renders. This forces all layers on directly on the entity's metadata so the full skin
-     * shows, independently of whatever ClientInformation shape the current NMS version uses.
-     */
     static void applyDefaultSkinLayers(Object serverPlayer) {
         if (serverPlayer == null) {
             return;
@@ -1037,30 +1026,40 @@ final class NpcPackets {
         try {
             Object dataWatcher = invokeEither(serverPlayer, "getEntityData", "getDataWatcher");
             if (dataWatcher == null) {
+                logSkinLayersFailure("getEntityData()/getDataWatcher() resolved to null");
                 return;
             }
             Object accessor = findSkinLayersAccessor(serverPlayer.getClass());
             if (accessor == null) {
+                logSkinLayersFailure("no static field containing CUSTOMIS/CUSTOMIZ found on "
+                        + serverPlayer.getClass().getName() + " or its superclasses");
                 return;
             }
             Method set = findSetMethod(dataWatcher.getClass(), accessor.getClass());
             if (set == null) {
+                logSkinLayersFailure("no set(accessor, value) method found on "
+                        + dataWatcher.getClass().getName() + " for accessor type " + accessor.getClass().getName());
                 return;
             }
             set.setAccessible(true);
             // 0x7F = every skin layer bit set (cape, jacket, sleeves, pants, hat).
             set.invoke(dataWatcher, accessor, (byte) 0x7F);
-        } catch (Throwable ignored) {
+        } catch (Throwable t) {
+            logSkinLayersFailure(t.getClass().getName() + ": " + t.getMessage());
         }
     }
 
-    /**
-     * Looks up SynchedEntityData#set by name/arity instead of an exact parameter-type match:
-     * the accessor field's runtime class isn't guaranteed to be the same Class object the
-     * setter's signature was compiled against, and getMethod() requires exact equality, so it
-     * was silently failing (swallowed by the caller's catch-all) and leaving the layers byte at
-     * its default of 0.
-     */
+    private static volatile boolean skinLayersFailureLogged = false;
+
+    private static void logSkinLayersFailure(String reason) {
+        if (skinLayersFailureLogged) {
+            return;
+        }
+        skinLayersFailureLogged = true;
+        Bukkit.getLogger().warning("[BlueFoundation-NPC] applyDefaultSkinLayers() failed, la capa "
+                + "exterior de la skin (jacket/hat/sleeves/pants) no se mostrará en ningún Npc: " + reason);
+    }
+
     private static Method findSetMethod(Class<?> dataWatcherClass, Class<?> accessorRuntimeClass) {
         for (Method method : dataWatcherClass.getMethods()) {
             if (!method.getName().equals("set")) {
@@ -1075,6 +1074,54 @@ final class NpcPackets {
     }
 
     private static Object findSkinLayersAccessor(Class<?> serverPlayerClass) {
+        Object byName = findSkinLayersAccessorByName(serverPlayerClass);
+        if (byName != null) {
+            return byName;
+        }
+        Class<?> playerClass = findClassNamed(serverPlayerClass, "Player");
+        if (playerClass == null) {
+            return null;
+        }
+        List<Field> candidates = new ArrayList<>();
+        for (Field field : playerClass.getDeclaredFields()) {
+            if (!java.lang.reflect.Modifier.isStatic(field.getModifiers()) || !isByteAccessorField(field)) {
+                continue;
+            }
+            try {
+                field.setAccessible(true);
+                Object value = field.get(null);
+                if (value != null && isEntityDataAccessor(value)) {
+                    candidates.add(field);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        if (candidates.size() == 1) {
+            Field only = candidates.get(0);
+            Bukkit.getLogger().log(java.util.logging.Level.FINE, "[BlueFoundation-NPC] Accessor de "
+                    + "skin layers resuelto por forma (único EntityDataAccessor<Byte> estático en "
+                    + playerClass.getName() + "): campo '" + only.getName() + "'");
+            try {
+                return only.get(null);
+            } catch (Throwable ignored) {
+                return null;
+            }
+        }
+        if (!candidates.isEmpty()) {
+            StringBuilder names = new StringBuilder();
+            for (Field f : candidates) {
+                names.append(f.getName()).append(", ");
+            }
+            Bukkit.getLogger().warning("[BlueFoundation-NPC] No se pudo identificar sin ambigüedad "
+                    + "el accessor de skin layers en " + playerClass.getName() + " - hay " + candidates.size()
+                    + " campos EntityDataAccessor<Byte> estáticos candidatos: " + names
+                    + "(revisar manualmente cuál es el equivalente a DATA_PLAYER_MODE_CUSTOMISATION "
+                    + "y añadirlo por nombre a findSkinLayersAccessorByName).");
+        }
+        return null;
+    }
+
+    private static Object findSkinLayersAccessorByName(Class<?> serverPlayerClass) {
         Class<?> current = serverPlayerClass;
         while (current != null && current != Object.class) {
             for (Field field : current.getDeclaredFields()) {
@@ -1088,7 +1135,7 @@ final class NpcPackets {
                 try {
                     field.setAccessible(true);
                     Object value = field.get(null);
-                    if (value != null) {
+                    if (value != null && isEntityDataAccessor(value)) {
                         return value;
                     }
                 } catch (Throwable ignored) {
@@ -1097,6 +1144,47 @@ final class NpcPackets {
             current = current.getSuperclass();
         }
         return null;
+    }
+
+    private static Class<?> findClassNamed(Class<?> from, String simpleName) {
+        Class<?> current = from;
+        while (current != null && current != Object.class) {
+            if (current.getSimpleName().equals(simpleName)) {
+                return current;
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    private static boolean isByteAccessorField(Field field) {
+        try {
+            java.lang.reflect.Type generic = field.getGenericType();
+            // Sin pattern matching de instanceof (Java 16+) - este módulo compila con
+            // maven.compiler.source/target=8, ver pom.xml de Referencia/BlueFoundation.
+            if (generic instanceof java.lang.reflect.ParameterizedType) {
+                java.lang.reflect.Type[] args = ((java.lang.reflect.ParameterizedType) generic).getActualTypeArguments();
+                return args.length == 1 && args[0] == Byte.class;
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    private static boolean isEntityDataAccessor(Object value) {
+        if (value instanceof Number) {
+            return false;
+        }
+        return hasNoArgIntMethod(value.getClass(), "getId") || hasNoArgIntMethod(value.getClass(), "id");
+    }
+
+    private static boolean hasNoArgIntMethod(Class<?> clazz, String name) {
+        try {
+            Method method = clazz.getMethod(name);
+            return method.getReturnType() == int.class;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     private static Object invokeEither(Object target, String first, String second) {

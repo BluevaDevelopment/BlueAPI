@@ -68,17 +68,30 @@ public final class Skin {
             if (profile == null) {
                 return null;
             }
-            Object textures = profile.getClass().getMethod("getProperties").invoke(profile);
+            Object textures = getProfileProperties(profile);
             if (textures == null) {
                 return null;
             }
             Object property = ((Iterable<?>) textures.getClass().getMethod("get", Object.class).invoke(textures, "textures")).iterator().next();
-            String value = (String) property.getClass().getMethod("getValue").invoke(property);
-            String signature = (String) property.getClass().getMethod("getSignature").invoke(property);
+            String value = (String) invokeAny(property, "getValue", "value");
+            String signature = (String) invokeAny(property, "getSignature", "signature");
+            if (value == null) {
+                return null;
+            }
             return of(value, signature);
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    private static Object invokeAny(Object target, String... methodNames) {
+        for (String name : methodNames) {
+            try {
+                return target.getClass().getMethod(name).invoke(target);
+            } catch (Throwable ignored) {
+            }
+        }
+        return null;
     }
 
     /**
