@@ -590,27 +590,40 @@ final class NpcImpl implements Npc {
         String entityEntry = getEntityTeamEntry();
         // Scoreboard team names are limited to 16 characters.
         String teamName = "bf_" + uuid.toString().replace("-", "").substring(0, 13);
-        try {
-            org.bukkit.scoreboard.Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
-            org.bukkit.scoreboard.Team team = board.getTeam(teamName);
-            if (team == null) {
-                team = board.registerNewTeam(teamName);
+        java.util.Set<org.bukkit.scoreboard.Scoreboard> boards = new java.util.LinkedHashSet<>();
+        boards.add(Bukkit.getScoreboardManager().getMainScoreboard());
+        for (UUID viewerId : viewers) {
+            Player viewer = Bukkit.getPlayer(viewerId);
+            if (viewer != null && viewer.isOnline()) {
+                org.bukkit.scoreboard.Scoreboard viewerBoard = viewer.getScoreboard();
+                if (viewerBoard != null) {
+                    boards.add(viewerBoard);
+                }
             }
-            java.lang.reflect.Method setColor = team.getClass().getMethod("setColor", ChatColor.class);
-            if (setColor != null) {
-                setColor.setAccessible(true);
-                setColor.invoke(team, glowColor == null ? ChatColor.WHITE : glowColor);
+        }
+
+        for (org.bukkit.scoreboard.Scoreboard board : boards) {
+            try {
+                org.bukkit.scoreboard.Team team = board.getTeam(teamName);
+                if (team == null) {
+                    team = board.registerNewTeam(teamName);
+                }
+                java.lang.reflect.Method setColor = team.getClass().getMethod("setColor", ChatColor.class);
+                if (setColor != null) {
+                    setColor.setAccessible(true);
+                    setColor.invoke(team, glowColor == null ? ChatColor.WHITE : glowColor);
+                }
+                team.setNameTagVisibility(nameVisible ? org.bukkit.scoreboard.NameTagVisibility.ALWAYS
+                        : org.bukkit.scoreboard.NameTagVisibility.NEVER);
+                if (!team.hasEntry(entry)) {
+                    team.addEntry(entry);
+                }
+                if (entityEntry != null && !entityEntry.equals(entry) && !team.hasEntry(entityEntry)) {
+                    team.addEntry(entityEntry);
+                }
+            } catch (Throwable e) {
+                Bukkit.getLogger().log(java.util.logging.Level.WARNING, "BlueFoundation NPC team update failed", e);
             }
-            team.setNameTagVisibility(nameVisible ? org.bukkit.scoreboard.NameTagVisibility.ALWAYS
-                    : org.bukkit.scoreboard.NameTagVisibility.NEVER);
-            if (!team.hasEntry(entry)) {
-                team.addEntry(entry);
-            }
-            if (entityEntry != null && !entityEntry.equals(entry) && !team.hasEntry(entityEntry)) {
-                team.addEntry(entityEntry);
-            }
-        } catch (Throwable e) {
-            Bukkit.getLogger().log(java.util.logging.Level.WARNING, "BlueFoundation NPC team update failed", e);
         }
     }
 
