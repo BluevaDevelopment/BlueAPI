@@ -30,35 +30,65 @@ jobs:
 
       # Same counter logic as the old build-local.sh: year.build, resetting
       # the build number when the year changes.
-      - name: Bump version
+      #
+      # The bump is committed and pushed *before* the deploy: pushing to main is
+      # what actually claims a build number. Doing it afterwards let two runs
+      # queued around the same time compute the same number (the loser then hit
+      # a 409 from the release repo, which never accepts a rewrite), and let a
+      # run lose its bump to a rejected push after it had already published.
+      # A burned number when the build fails is the cheap side of that trade.
+      # Pushes made with GITHUB_TOKEN don't retrigger this workflow; the
+      # [skip ci] marker is extra insurance.
+      - name: Claim next version
         id: version
         run: |
-          CURRENT_YEAR="$(date +%y)"
-          YEAR="$CURRENT_YEAR"
-          BUILD=0
-          if [[ -f build.properties ]]; then
-            source build.properties
-            YEAR="${year:-$CURRENT_YEAR}"
-            BUILD="${build:-0}"
-          fi
-          if [[ "$YEAR" != "$CURRENT_YEAR" ]]; then
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3 4 5; do
+            # Always count from the tip of main: this job may have been queued
+            # behind a push (or behind another run's bump) since checkout.
+            git fetch origin main
+            git reset --hard origin/main
+
+            CURRENT_YEAR="$(date +%y)"
             YEAR="$CURRENT_YEAR"
             BUILD=0
-          fi
-          BUILD=$((BUILD + 1))
-          REVISION="$YEAR.$BUILD"
-          printf 'year=%s\nbuild=%s\n' "$YEAR" "$BUILD" > build.properties
-          # Keep the pom's default revision in sync so the installed/deployed
-          # POM reports the real version to Maven/Gradle consumers.
-          sed -i "s|<revision>[^<]*</revision>|<revision>$REVISION</revision>|" pom.xml
-          # Point the README's badge and Gradle/Maven dependency snippets at the new version.
-          sed -i \
-            -e "s|version-[^-]*-blue|version-$REVISION-blue|" \
-            -e "s|net.blueva.foundation:BlueFoundation:[^\"]*|net.blueva.foundation:BlueFoundation:$REVISION|" \
-            -e "s|<version>[^<]*</version>|<version>$REVISION</version>|" \
-            README.md
-          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
-          echo "Building BlueFoundation $REVISION"
+            if [[ -f build.properties ]]; then
+              source build.properties
+              YEAR="${year:-$CURRENT_YEAR}"
+              BUILD="${build:-0}"
+            fi
+            if [[ "$YEAR" != "$CURRENT_YEAR" ]]; then
+              YEAR="$CURRENT_YEAR"
+              BUILD=0
+            fi
+            BUILD=$((BUILD + 1))
+            REVISION="$YEAR.$BUILD"
+
+            printf 'year=%s\nbuild=%s\n' "$YEAR" "$BUILD" > build.properties
+            # Keep the pom's default revision in sync so the installed/deployed
+            # POM reports the real version to Maven/Gradle consumers.
+            sed -i "s|<revision>[^<]*</revision>|<revision>$REVISION</revision>|" pom.xml
+            # Point the README's badge and Gradle/Maven dependency snippets at the new version.
+            sed -i \
+              -e "s|version-[^-]*-blue|version-$REVISION-blue|" \
+              -e "s|net.blueva.foundation:BlueFoundation:[^\"]*|net.blueva.foundation:BlueFoundation:$REVISION|" \
+              -e "s|<version>[^<]*</version>|<version>$REVISION</version>|" \
+              README.md
+
+            git add build.properties pom.xml README.md
+            git commit -m "build: bump version to $REVISION [skip ci]"
+            if git push origin HEAD:main; then
+              echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
+              echo "Building BlueFoundation $REVISION"
+              exit 0
+            fi
+            echo "main moved while claiming $REVISION, retrying (attempt $attempt)"
+          done
+
+          echo "::error::could not claim a build number after 5 attempts"
+          exit 1
 
       - name: Build and publish to repo.blueva.net
         env:
@@ -66,18 +96,8 @@ jobs:
           BLUEVA_REPO_SECRET: ${{ secrets.BLUEVA_REPO_SECRET }}
         run: mvn -B -Drevision="${{ steps.version.outputs.revision }}" clean deploy
 
-      # Pushes made with GITHUB_TOKEN don't retrigger this workflow; the
-      # [skip ci] marker is extra insurance.
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add build.properties pom.xml README.md
-          git commit -m "build: bump version to ${{ steps.version.outputs.revision }} [skip ci]"
-          git push
-
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REVISION: ${{ steps.version.outputs.revision }}
-        run: gh release create "v$REVISION" "target/BlueFoundation-$REVISION.jar" --title "BlueFoundation $REVISION" --generate-notes
+        run: gh release create "v$REVISION" "target/BlueFoundation-$REVISION.jar" --title "BlueFoundation $REVISION" --generate-notes --target "$(git rev-parse HEAD)"
