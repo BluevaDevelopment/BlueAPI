@@ -61,9 +61,22 @@ public class Sounds {
             return registrySound;
         }
 
-        String normalized = legacyName(name);
+        return legacyValueOf(legacyName(name));
+    }
+
+    /**
+     * Resolves a sound by its old enum constant name, reflectively: compiled
+     * against 1.8.8 where Sound is an enum, but Sound is an interface from 1.21.3
+     * on, and a direct valueOf call fails there with IncompatibleClassChangeError.
+     */
+    private static Sound legacyValueOf(String name) {
+        if (isBlank(name)) {
+            return null;
+        }
         try {
-            return Sound.valueOf(normalized);
+            Method valueOf = Sound.class.getMethod("valueOf", String.class);
+            Object sound = valueOf.invoke(null, name);
+            return sound instanceof Sound ? (Sound) sound : null;
         } catch (Throwable ignored) {
             return null;
         }

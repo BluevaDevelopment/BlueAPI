@@ -1,6 +1,7 @@
 package net.blueva.foundation.music;
 
 import org.bukkit.Location;
+import net.blueva.foundation.sounds.Sounds;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -37,12 +38,10 @@ final class InstrumentSound {
 
     static InstrumentSound vanilla(int instrument) {
         int index = instrument >= 0 && instrument < VANILLA_NAMES.length ? instrument : 0;
-        for (String name : VANILLA_NAMES[index]) {
-            try {
-                return new InstrumentSound(Sound.valueOf(name), null);
-            } catch (IllegalArgumentException ignored) {
-                // Try the next name for the active server generation.
-            }
+        // Via Sounds so the lookup stays version-safe; see legacyValueOf there.
+        Sound sound = Sounds.match(VANILLA_NAMES[index]);
+        if (sound != null) {
+            return new InstrumentSound(sound, null);
         }
         return custom("minecraft:block.note_block.harp");
     }
