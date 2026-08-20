@@ -1,5 +1,7 @@
 # Entities
 
+**Available on:** Bukkit ✅ only - no entity/world state on a proxy; Hytale's ECS entity model is unrelated
+
 `BlueFoundation.Entities` resolves renamed `EntityType` constants safely by trying multiple names, so code compiled against an old API keeps working on servers where the constant was renamed (and vice versa). Aliases are resolved bidirectionally: passing only the modern name still works on legacy servers, and only the legacy name works on modern ones.
 
 ```java

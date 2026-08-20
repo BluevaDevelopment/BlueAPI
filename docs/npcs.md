@@ -1,5 +1,7 @@
 # NPCs
 
+**Available on:** Bukkit ✅ only - packet-based fake players have no equivalent on a proxy or on Hytale
+
 `BlueFoundation.NPCs` creates packet-based player NPCs that work across Bukkit/Spigot/Paper versions without depending on versioned NMS package names. It builds a fake `ServerPlayer`/`EntityPlayer` internally and sends spawn, equipment, teleport, animation and destroy packets only to selected viewers.
 
 This approach avoids version-detection issues on modern Paper servers, because version detection is handled by `BlueFoundation.Version` instead of parsing `Bukkit.getServer().getClass().getPackage().getName()`.

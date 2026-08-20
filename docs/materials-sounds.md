@@ -1,6 +1,8 @@
 # Materials and sounds
 
-`BlueFoundation.Materials` and `BlueFoundation.Sounds` resolve renamed constants safely by trying multiple names. Sounds also accept modern namespaced keys on servers that expose the Bukkit sound registry.
+**Available on:** `Materials` - Bukkit ✅ only, no such concept on a proxy or on Hytale. `Sounds` - Bukkit ✅ · Velocity ❌ · BungeeCord ❌ · Hytale ✅ (a different, asset-map-based API - see [`BlueFoundation.Sounds` on Hytale](../hytale/src/main/java/net/blueva/foundation/sounds/Sounds.java)).
+
+This page describes the Bukkit `Materials`/`Sounds` facades below. `BlueFoundation.Materials` resolves renamed `Material` constants safely by trying multiple names; `BlueFoundation.Sounds` does the same for `Sound` and also accepts modern namespaced keys on servers that expose the Bukkit sound registry.
 
 ```java
 Material oakSign = BlueFoundation.Materials.require("OAK_SIGN", "SIGN");

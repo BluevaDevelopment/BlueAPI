@@ -1,6 +1,8 @@
 # Music
 
-BlueFoundation includes per-player NBS and MIDI playback without requiring an
+**Available on:** Bukkit ✅ NBS + MIDI · Velocity ❌ · BungeeCord ❌ · Hytale ⚠️ MIDI only, requires the caller to supply a `MusicManager.SoundEventIdResolver` for whatever asset pack the server uses - see [`BlueFoundation.Music` on Hytale](../hytale/src/main/java/net/blueva/foundation/music/MusicManager.java).
+
+This page describes the Bukkit `Music` facade below. BlueFoundation includes per-player NBS and MIDI playback without requiring an
 additional server plugin.
 
 ```java

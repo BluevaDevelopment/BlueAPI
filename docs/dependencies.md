@@ -1,5 +1,7 @@
 # Runtime dependencies
 
+**Available on:** Bukkit ✅ · Velocity ✅ · BungeeCord ✅ · Hytale ✅
+
 Runtime dependency loading is managed through `BlueFoundation.Dependencies`.
 
 It downloads Maven artifacts into the plugin's `libraries` folder and injects them into the plugin classloader at startup.

@@ -1,5 +1,7 @@
 # Configs
 
+**Available on:** Bukkit ✅ · Velocity ✅ · BungeeCord ✅ · Hytale ✅ standalone, alongside Hytale's own Codec system
+
 `BlueFoundation.Configs` loads YAML and TOML configs without wrapping another config API. Both formats use the same internal tree, getters, comments and auto-update logic, so plugins can start on YAML and migrate to TOML later without changing the config-facing code style.
 
 YAML usage:

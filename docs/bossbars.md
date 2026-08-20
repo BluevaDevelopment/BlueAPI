@@ -1,5 +1,7 @@
 # Boss bars
 
+**Available on:** Bukkit ✅ legacy fallback included · Velocity ✅ native Adventure · BungeeCord ❌ no such API · Hytale ❌ no such API
+
 `BlueFoundation.BossBars` creates boss bars you can keep, update and remove. The Bukkit boss bar
 API (`org.bukkit.boss.BossBar`) arrived in 1.9, so nothing here names that type: `create` hands back
 a `BfBossBar` that owns the real bar when the server has one and silently no-ops when it does not.

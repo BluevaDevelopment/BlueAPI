@@ -1,5 +1,7 @@
 # Attributes
 
+**Available on:** Bukkit ✅ only - no entity state on a proxy; not yet mapped on Hytale
+
 `BlueFoundation.Attributes` reads and writes entity attributes across every version.
 `org.bukkit.attribute.Attribute` only exists from 1.9, and its constants were renamed twice:
 `GENERIC_MAX_HEALTH` through 1.21.2, `MAX_HEALTH` afterwards, when the type also stopped being an

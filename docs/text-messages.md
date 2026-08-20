@@ -1,13 +1,16 @@
 # Text and messages
 
-`BlueFoundation.Text` parses MiniMessage into Adventure `Component` values and serializes components back to legacy strings only for old Bukkit APIs that still require strings.
+**Available on:** Bukkit ✅ · Velocity ✅ native Adventure · BungeeCord ✅ via BaseComponent · Hytale ✅ via Message - see the [feature matrix](../README.md#feature-matrix) for what differs per platform
+
+`BlueFoundation.Text` parses MiniMessage - legacy `&`/`§` codes are accepted too, resolving to the same styling as the equivalent tag would (`&c` and `<red>` produce an identical result). There is only this one call: whether the actual rendering ends up using Adventure natively (Paper, Velocity) or BlueFoundation's own engine (Spigot, BungeeCord, Hytale) is resolved internally per server, not something callers choose between.
 
 ```java
-Component title = BlueFoundation.Text.component("<gold>Victory!</gold>");
-String inventoryTitle = BlueFoundation.Text.legacySection(title);
+BfComponent title = BlueFoundation.Text.parse("<gold>Victory!</gold>");
+String plain = BlueFoundation.Text.plain("<gold>Victory!</gold>");
+String inventoryTitle = BlueFoundation.Text.legacySection("<gold>Victory!</gold>");
 ```
 
-`BlueFoundation.Messages` sends Adventure components to players, command senders, action bars, and titles. Message strings are parsed as MiniMessage by default. Legacy `&` colors are accepted only as a compatibility input path.
+`BlueFoundation.Messages` sends text to players, command senders, action bars, titles and boss bars, using the same MiniMessage/legacy input as `Text`. On Paper it delivers through a native Adventure `Audience`; everywhere else it falls back to legacy Bukkit APIs - both paths are internal to `Messages`, never a choice the caller makes.
 
 ```java
 BlueFoundation.Messages.send(player, "<green>Hello!");

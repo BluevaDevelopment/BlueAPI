@@ -1,5 +1,7 @@
 # Particles
 
+**Available on:** Bukkit ✅ only - no particle concept on a proxy or (yet) mapped on Hytale
+
 `BlueFoundation.Particles` spawns particles by name on any server version. `org.bukkit.Particle`
 does not exist before 1.9, so nothing here takes or returns that type: you pass candidate names and
 get a `boolean` telling you whether anything was actually spawned.

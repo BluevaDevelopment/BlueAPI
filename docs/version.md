@@ -1,5 +1,7 @@
 # Version utilities
 
+**Available on:** Bukkit ✅ full · Velocity ⚠️ proxy/protocol version · BungeeCord ⚠️ proxy/protocol version · Hytale ⚠️ plugin manifest semver only
+
 `BlueFoundation.Version` exposes Minecraft/Bukkit version helpers.
 
 ```java

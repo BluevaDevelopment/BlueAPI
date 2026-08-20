@@ -1,5 +1,7 @@
 # Multi-version events
 
+**Available on:** Bukkit ✅ only - Bukkit's own event system has no equivalent on a proxy or on Hytale
+
 `BlueFoundation.Events` provides wrapped events that register the correct Bukkit event implementation at runtime.
 
 ```java

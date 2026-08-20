@@ -1,5 +1,7 @@
 # Items
 
+**Available on:** Bukkit ✅ only - no ItemStack concept on a proxy or (yet) mapped on Hytale
+
 `BlueFoundation.Items` creates and edits Bukkit `ItemStack` instances. Display names and lore are MiniMessage-first, then serialized to legacy strings only because older Bukkit item metadata APIs require strings.
 
 ```java

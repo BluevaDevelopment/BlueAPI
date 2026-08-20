@@ -1,5 +1,7 @@
 # Worlds, blocks, players and inventories
 
+**Available on:** Bukkit ✅ full · Velocity ⚠️ `Players` only (ping/UUID/name) · BungeeCord ⚠️ `Players` only (ping/UUID/name) · Hytale ❌ not yet mapped
+
 Small multi-version helpers for API that moved, was renamed, or simply did not exist yet. Each one
 picks the right call for the running server so callers stay free of version branches.
 

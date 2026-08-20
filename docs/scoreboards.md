@@ -1,5 +1,7 @@
 # Scoreboard
 
+**Available on:** Bukkit ✅ full · Velocity ❌ no proxy game state · BungeeCord ❌ no proxy game state · Hytale ⚠️ experimental, HyUI-based - see [the feature matrix](../README.md#feature-matrix)
+
 `BlueFoundation.Scoreboards` creates packet-based sidebar scoreboards for individual players. It works from Minecraft 1.8 to modern versions without hard NMS dependencies.
 
 ```java

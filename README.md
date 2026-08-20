@@ -3,13 +3,23 @@
 </p>
 
 <p align="center">
-  <strong>A lightweight API foundation for Minecraft plugins.</strong>
+  <strong>A lightweight API foundation for Minecraft (Bukkit/Spigot/Paper/Folia, Velocity, BungeeCord) and Hytale servers.</strong>
+</p>
+
+<p align="center">
+  <img alt="Bukkit" src="https://img.shields.io/badge/Bukkit-supported-F7A100">
+  <img alt="Spigot" src="https://img.shields.io/badge/Spigot-supported-ED8106">
+  <img alt="Paper" src="https://img.shields.io/badge/Paper-supported-00C7B7">
+  <img alt="Folia" src="https://img.shields.io/badge/Folia-supported-8E44AD">
+  <img alt="Velocity" src="https://img.shields.io/badge/Velocity-supported-6E56CF">
+  <img alt="BungeeCord" src="https://img.shields.io/badge/BungeeCord-supported-5C5C5C">
+  <img alt="Hytale" src="https://img.shields.io/badge/Hytale-supported-2ECC71">
 </p>
 
 <p align="center">
   <img alt="Version" src="https://img.shields.io/badge/version-26.29-blue">
   <img alt="Java" src="https://img.shields.io/badge/Java-8+-ED8B00?logo=openjdk&logoColor=white">
-  <img alt="Build" src="https://img.shields.io/badge/build-Maven-C71A36?logo=apachemaven&logoColor=white">
+  <img alt="Build" src="https://img.shields.io/badge/build-Gradle-02303A?logo=gradle&logoColor=white">
 </p>
 
 BlueFoundation focuses on keeping reusable plugin infrastructure small, explicit, and easy to access from a single namespace:
@@ -18,21 +28,54 @@ BlueFoundation focuses on keeping reusable plugin infrastructure small, explicit
 import net.blueva.foundation.BlueFoundation;
 ```
 
-## Installation
+Multi-module Gradle project: one jar per platform, plus a shared `common` core pulled in transitively.
 
-### Gradle (Kotlin DSL)
-
-```kotlin
-repositories {
-    maven("https://repo.blueva.net/releases")
-}
-
-dependencies {
-    compileOnly("net.blueva.foundation:BlueFoundation:26.29")
-}
+```
+common/       -> BlueFoundation-Common
+bukkit/       -> BlueFoundation            (Bukkit/Spigot/Paper/Folia)
+velocity/     -> BlueFoundation-Velocity
+bungeecord/   -> BlueFoundation-BungeeCord
+hytale/       -> BlueFoundation-Hytale
 ```
 
-### Maven
+## Feature matrix
+
+✅ full · ⚠️ partial · ❌ not applicable / not attempted. See each platform's docs page for the details behind a ⚠️.
+
+| Facade | Bukkit | Velocity | BungeeCord | Hytale |
+|---|:---:|:---:|:---:|:---:|
+| `Dependencies` | ✅ | ✅ | ✅ | ✅ |
+| `Reflection` | ✅ | ⚠️ generic only | ⚠️ generic only | ⚠️ generic only |
+| `Configs` | ✅ | ✅ | ✅ | ⚠️ standalone |
+| `Version` | ✅ | ⚠️ proxy/protocol | ⚠️ proxy/protocol | ⚠️ manifest semver |
+| `Text` / `Messages` | ✅ | ✅ | ✅ | ✅ |
+| `Commands` | ✅ | ⚠️ basic | ⚠️ basic | ⚠️ basic |
+| `Scheduler` | ✅ incl. Folia | ✅ | ✅ | ✅ |
+| `BossBars` | ✅ | ✅ | ❌ | ❌ |
+| `Scoreboards` | ✅ | ❌ | ❌ | ⚠️ experimental |
+| `Sounds` | ✅ | ❌ | ❌ | ✅ |
+| `Music` | ✅ | ❌ | ❌ | ⚠️ MIDI only |
+| `Players` | ✅ | ⚠️ partial | ⚠️ partial | ❌ |
+| `Materials`, `Items`, `Entities`, `NPCs`, `Particles`, `Attributes`, `GameRules`, `Inventories`, `Hologram`, `Blocks`, `Worlds` | ✅ | ❌ | ❌ | ❌ |
+
+## Installation
+
+`repo.blueva.net` is a public Maven repository, no authentication needed.
+
+| Platform | Artifact |
+|---|---|
+| Bukkit / Spigot / Paper | `net.blueva.foundation:BlueFoundation:26.29` |
+| Velocity | `net.blueva.foundation:BlueFoundation-Velocity:26.29` |
+| BungeeCord | `net.blueva.foundation:BlueFoundation-BungeeCord:26.29` |
+| Hytale | `net.blueva.foundation:BlueFoundation-Hytale:26.29` |
+
+```kotlin
+repositories { maven("https://repo.blueva.net/releases") }
+dependencies { compileOnly("net.blueva.foundation:BlueFoundation:26.29") } // swap the artifact id above for other platforms
+```
+
+<details>
+<summary>Maven</summary>
 
 ```xml
 <repositories>
@@ -51,63 +94,22 @@ dependencies {
 </dependencies>
 ```
 
-repo.blueva.net is a public Maven repository, no authentication needed to depend on it.
-
-## API structure
-
-`BlueFoundation` is a small facade. Implementations live in dedicated packages, while public aliases keep usage centralized under `BlueFoundation.*`. Event wrappers are also split into dedicated interfaces/adapters internally.
-
-```java
-BlueFoundation.Dependencies
-BlueFoundation.Version
-BlueFoundation.Reflection
-BlueFoundation.Materials
-BlueFoundation.Items
-BlueFoundation.AdventureItems
-BlueFoundation.Sounds
-BlueFoundation.Music
-BlueFoundation.Entities
-BlueFoundation.Scheduler
-BlueFoundation.Commands
-BlueFoundation.Messages
-BlueFoundation.Text
-BlueFoundation.AdventureText
-BlueFoundation.Events
-BlueFoundation.Configs
-BlueFoundation.NPCs
-BlueFoundation.Players
-BlueFoundation.Worlds
-BlueFoundation.Blocks
-BlueFoundation.Particles
-BlueFoundation.Attributes
-BlueFoundation.GameRules
-BlueFoundation.BossBars
-BlueFoundation.Inventories
-BlueFoundation.Scoreboards
-```
+</details>
 
 ## Documentation
 
-- [Runtime dependencies](docs/dependencies.md): `BlueFoundation.Dependencies`
-- [Version utilities](docs/version.md): `BlueFoundation.Version`
-- [Reflection helpers](docs/reflection.md): `BlueFoundation.Reflection`
-- [Materials and sounds](docs/materials-sounds.md): `BlueFoundation.Materials`, `BlueFoundation.Sounds`
-- [Music](docs/music.md): `BlueFoundation.Music`
-- [Entities](docs/entities.md): `BlueFoundation.Entities`
-- [Items](docs/items.md): `BlueFoundation.Items`
-- [Text and messages](docs/text-messages.md): `BlueFoundation.Text`, `BlueFoundation.Messages`
-- [Scheduler](docs/scheduler.md): `BlueFoundation.Scheduler`
-- [Commands](docs/commands.md): `BlueFoundation.Commands`
-- [Configs](docs/configs.md): `BlueFoundation.Configs`
-- [NPCs](docs/npcs.md): `BlueFoundation.NPCs`
-- [Scoreboard](docs/scoreboards.md): `BlueFoundation.Scoreboards`
-- [Multi-version events](docs/events.md): `BlueFoundation.Events`
-- [Particles](docs/particles.md): `BlueFoundation.Particles`
-- [Attributes](docs/attributes.md): `BlueFoundation.Attributes`
-- [Game rules](docs/gamerules.md): `BlueFoundation.GameRules`
-- [Boss bars](docs/bossbars.md): `BlueFoundation.BossBars`
-- [Worlds, blocks, players and inventories](docs/world-players.md): `BlueFoundation.Worlds`, `BlueFoundation.Blocks`, `BlueFoundation.Players`, `BlueFoundation.Inventories`
+- [Common module](docs/common.md) - shared core, pulled in transitively
+
+**Bukkit / Spigot / Paper**
+
+[Dependencies](docs/dependencies.md) · [Version](docs/version.md) · [Reflection](docs/reflection.md) · [Materials and sounds](docs/materials-sounds.md) · [Music](docs/music.md) · [Entities](docs/entities.md) · [Items](docs/items.md) · [Text and messages](docs/text-messages.md) · [Scheduler](docs/scheduler.md) · [Commands](docs/commands.md) · [Configs](docs/configs.md) · [NPCs](docs/npcs.md) · [Scoreboard](docs/scoreboards.md) · [Multi-version events](docs/events.md) · [Particles](docs/particles.md) · [Attributes](docs/attributes.md) · [Game rules](docs/gamerules.md) · [Boss bars](docs/bossbars.md) · [Worlds, blocks, players and inventories](docs/world-players.md)
+
+**Proxies and Hytale**
+
+- [Velocity](docs/velocity.md)
+- [BungeeCord](docs/bungeecord.md)
+- [Hytale](docs/hytale.md)
 
 ## Goal
 
-BlueFoundation aims to be a common foundation for Blueva plugins: small, clear, and ready to grow with multiversion tools and reusable systems for Bukkit/Spigot/Paper development.
+BlueFoundation aims to be a common foundation for Blueva plugins: small, clear, and ready to grow with multiversion tools and reusable systems - across Bukkit/Spigot/Paper, Velocity, BungeeCord, and Hytale.

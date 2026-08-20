@@ -1,5 +1,7 @@
 # Scheduler
 
+**Available on:** Bukkit ✅ incl. Folia · Velocity ✅ · BungeeCord ✅ · Hytale ✅
+
 `BlueFoundation.Scheduler` is a Folia-aware scheduler facade with small stable task handles and tick conversion helpers. It compiles against legacy Spigot, then detects Folia at runtime and uses Paper/Folia schedulers reflectively, so consumers do not need to bundle any external scheduler library.
 
 Global/server work:

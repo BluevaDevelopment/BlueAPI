@@ -1,5 +1,7 @@
 # Game rules
 
+**Available on:** Bukkit ✅ only - no world state on a proxy or (yet) mapped on Hytale
+
 `BlueFoundation.GameRules` sets and reads boolean game rules on any server version. 1.13 replaced
 `World#setGameRuleValue(String, String)` with the typed `World#setGameRule(GameRule, T)` API and
 deprecated the string form; `org.bukkit.GameRule` does not exist at all before that.
