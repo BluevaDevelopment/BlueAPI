@@ -1,0 +1,23 @@
+[versions]
+adventure = "4.26.1"
+gson = "2.10.1"
+junit = "4.13.2"
+authlib = "1.5.21"
+netty = "4.1.42.Final"
+spigot = "1.8.8-R0.1-SNAPSHOT"
+velocity = "3.4.0-SNAPSHOT"
+bungeecord = "1.20-R0.4"
+hytaleServer = "0.5.6"
+
+[libraries]
+adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
+adventure-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure" }
+adventure-serializer-legacy = { module = "net.kyori:adventure-text-serializer-legacy", version.ref = "adventure" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+junit = { module = "junit:junit", version.ref = "junit" }
+authlib = { module = "com.mojang:authlib", version.ref = "authlib" }
+netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
+spigot-api = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
+velocity-api = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
+bungeecord-api = { module = "net.md-5:bungeecord-api", version.ref = "bungeecord" }
+hytale-server = { module = "com.hypixel.hytale:Server", version.ref = "hytaleServer" }
