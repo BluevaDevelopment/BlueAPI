@@ -1,6 +1,8 @@
 package net.blueva.foundation;
 
 import com.hypixel.hytale.server.core.plugin.PluginBase;
+import net.blueva.foundation.music.InstrumentSounds;
+import net.blueva.foundation.music.MusicManager;
 
 import java.util.Collection;
 
@@ -134,6 +136,38 @@ public final class BlueFoundation {
     }
 
     /**
+     * Injects files directly into the calling plugin's own running jar - the
+     * one mechanism Hytale asset registration is known to actually work
+     * through in practice (proven in production by BlueArcade's item sync).
+     * Changes only take effect after a server restart. Generic on purpose:
+     * BlueFoundation itself has no opinion on what gets written where - see
+     * {@link net.blueva.foundation.music.InstrumentSounds} for one
+     * concrete use (instrument sounds).
+     */
+    public static class Assets {
+        private Assets() {
+        }
+
+        /** @return {@code true} if {@code entryPath} already exists inside {@code plugin}'s jar. */
+        public static boolean hasEntry(PluginBase plugin, String entryPath) {
+            return net.blueva.foundation.assets.JarAssetInjector.hasEntry(plugin.getClass(), entryPath);
+        }
+
+        /** Writes (creating or overwriting) a single entry inside {@code plugin}'s own jar. */
+        public static void writeEntry(PluginBase plugin, String entryPath, byte[] content) {
+            net.blueva.foundation.assets.JarAssetInjector.writeEntry(plugin.getClass(), entryPath, content);
+        }
+
+        /**
+         * Copies every file under {@code sourceDirectory} into {@code plugin}'s
+         * own jar, under {@code entryPrefix}, preserving relative structure.
+         */
+        public static void writeTree(PluginBase plugin, java.nio.file.Path sourceDirectory, String entryPrefix) {
+            net.blueva.foundation.assets.JarAssetInjector.writeTree(plugin.getClass(), sourceDirectory, entryPrefix);
+        }
+    }
+
+    /**
      * MIDI melody playback - see {@link net.blueva.foundation.music.MusicManager}.
      */
     public static class Music {
@@ -146,10 +180,20 @@ public final class BlueFoundation {
          * @param soundEventIdResolver resolves an instrument/octave/note-length to the id of the
          *                            sound event that plays it - see {@link net.blueva.foundation.music.MusicManager.SoundEventIdResolver}.
          */
-        public static net.blueva.foundation.music.MusicManager create(PluginBase plugin, net.blueva.foundation.music.MusicManager.SoundEventIdResolver soundEventIdResolver) {
+        public static MusicManager create(PluginBase plugin, MusicManager.SoundEventIdResolver soundEventIdResolver) {
             net.blueva.foundation.music.MidiLibrary library = new net.blueva.foundation.music.MidiLibrary(plugin.getLogger());
             library.setSoundsDirectory(plugin.getDataDirectory().resolve("sounds"));
-            return new net.blueva.foundation.music.MusicManager(plugin.getLogger(), library, soundEventIdResolver);
+            return new MusicManager(plugin.getLogger(), library, soundEventIdResolver);
+        }
+
+        /**
+         * Convenience for {@link #create} that installs and uses the bundled
+         * instrument sound pack automatically - see {@link InstrumentSounds}.
+         * A restart is required after the first install before any sound plays.
+         */
+        public static MusicManager createWithInstrumentSounds(PluginBase plugin) {
+            InstrumentSounds.installIfNeeded(plugin, null);
+            return create(plugin, InstrumentSounds.resolver());
         }
     }
 }
