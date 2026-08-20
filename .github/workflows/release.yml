@@ -19,17 +19,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 25, not 21: velocity compiles with --release 25 (velocity-api 4.0.0 needs JVM 25).
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
-          cache: maven
-          server-id: blueva-repo
-          server-username: BLUEVA_REPO_USERNAME
-          server-password: BLUEVA_REPO_SECRET
+          java-version: '25'
+          cache: gradle
 
-      # Same counter logic as the old build-local.sh: year.build, resetting
-      # the build number when the year changes.
+      # Same counter logic as before: year.build, resetting the build number
+      # when the year changes.
       #
       # The bump is committed and pushed *before* the deploy: pushing to main is
       # what actually claims a build number. Doing it afterwards let two runs
@@ -67,17 +65,14 @@ jobs:
             REVISION="$YEAR.$BUILD"
 
             printf 'year=%s\nbuild=%s\n' "$YEAR" "$BUILD" > build.properties
-            # Keep the pom's default revision in sync so the installed/deployed
-            # POM reports the real version to Maven/Gradle consumers.
-            sed -i "s|<revision>[^<]*</revision>|<revision>$REVISION</revision>|" pom.xml
-            # Point the README's badge and Gradle/Maven dependency snippets at the new version.
+            # Point the README's badge and per-module install snippets at the new version.
             sed -i \
               -e "s|version-[^-]*-blue|version-$REVISION-blue|" \
-              -e "s|net.blueva.foundation:BlueFoundation:[^\"]*|net.blueva.foundation:BlueFoundation:$REVISION|" \
+              -e "s|net.blueva.foundation:BlueFoundation\([A-Za-z-]*\):[0-9][^\"'\`]*|net.blueva.foundation:BlueFoundation\1:$REVISION|g" \
               -e "s|<version>[^<]*</version>|<version>$REVISION</version>|" \
               README.md
 
-            git add build.properties pom.xml README.md
+            git add build.properties README.md
             git commit -m "build: bump version to $REVISION [skip ci]"
             if git push origin HEAD:main; then
               echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
@@ -90,14 +85,47 @@ jobs:
           echo "::error::could not claim a build number after 5 attempts"
           exit 1
 
-      - name: Build and publish to repo.blueva.net
+      # Build + test everything first, so a failure stops the job before any
+      # publish step runs.
+      - name: Build and test all modules
+        run: ./gradlew build --no-daemon
+
+      # One publish step per module, so a failure shows up against the
+      # specific platform instead of one opaque step.
+      - name: Publish common
         env:
           BLUEVA_REPO_USERNAME: ${{ secrets.BLUEVA_REPO_USERNAME }}
           BLUEVA_REPO_SECRET: ${{ secrets.BLUEVA_REPO_SECRET }}
-        run: mvn -B -Drevision="${{ steps.version.outputs.revision }}" clean deploy
+        run: ./gradlew :common:publish --no-daemon
+
+      - name: Publish bukkit
+        env:
+          BLUEVA_REPO_USERNAME: ${{ secrets.BLUEVA_REPO_USERNAME }}
+          BLUEVA_REPO_SECRET: ${{ secrets.BLUEVA_REPO_SECRET }}
+        run: ./gradlew :bukkit:publish --no-daemon
+
+      - name: Publish velocity
+        env:
+          BLUEVA_REPO_USERNAME: ${{ secrets.BLUEVA_REPO_USERNAME }}
+          BLUEVA_REPO_SECRET: ${{ secrets.BLUEVA_REPO_SECRET }}
+        run: ./gradlew :velocity:publish --no-daemon
+
+      - name: Publish bungeecord
+        env:
+          BLUEVA_REPO_USERNAME: ${{ secrets.BLUEVA_REPO_USERNAME }}
+          BLUEVA_REPO_SECRET: ${{ secrets.BLUEVA_REPO_SECRET }}
+        run: ./gradlew :bungeecord:publish --no-daemon
+
+      - name: Publish hytale
+        env:
+          BLUEVA_REPO_USERNAME: ${{ secrets.BLUEVA_REPO_USERNAME }}
+          BLUEVA_REPO_SECRET: ${{ secrets.BLUEVA_REPO_SECRET }}
+        run: ./gradlew :hytale:publish --no-daemon
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REVISION: ${{ steps.version.outputs.revision }}
-        run: gh release create "v$REVISION" "target/BlueFoundation-$REVISION.jar" --title "BlueFoundation $REVISION" --generate-notes --target "$(git rev-parse HEAD)"
+        run: |
+          gh release create "v$REVISION" */build/libs/*-"$REVISION".jar \
+            --title "BlueFoundation $REVISION" --generate-notes --target "$(git rev-parse HEAD)"
