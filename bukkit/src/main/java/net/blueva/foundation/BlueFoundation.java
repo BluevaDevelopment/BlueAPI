@@ -105,11 +105,6 @@ public final class BlueFoundation {
         }
     }
 
-    public static class AdventureItems extends net.blueva.foundation.items.AdventureItems {
-        private AdventureItems() {
-        }
-    }
-
     public static class Sounds extends net.blueva.foundation.sounds.Sounds {
         private Sounds() {
         }
@@ -147,11 +142,6 @@ public final class BlueFoundation {
 
     public static class Text extends net.blueva.foundation.text.Text {
         private Text() {
-        }
-    }
-
-    public static class AdventureText extends net.blueva.foundation.text.AdventureText {
-        private AdventureText() {
         }
     }
 

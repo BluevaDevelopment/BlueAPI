@@ -3,6 +3,8 @@ package net.blueva.foundation.items;
 import net.blueva.foundation.materials.LegacyMaterials;
 import net.blueva.foundation.materials.Materials;
 import net.blueva.foundation.text.Text;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -29,8 +31,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Base64;
 
-/** Multi-version item helpers. Text input is MiniMessage-first. */
+/**
+ * Multi-version item helpers. Text input is MiniMessage-first (legacy
+ * {@code &}/{@code §} codes are also accepted). {@link String} overloads go
+ * through BlueFoundation's own parser; {@link Component} overloads exist for
+ * callers who already have an Adventure component handy - both end up
+ * serialized to the same legacy-formatted display name/lore, since that is
+ * the only format {@link ItemMeta} accepts on every supported version.
+ */
 public class Items {
+
+    private static final LegacyComponentSerializer LEGACY_SECTION = LegacyComponentSerializer.legacySection();
 
     protected Items() {
     }
@@ -273,6 +284,42 @@ public class Items {
 
     public static ItemStack addLoreSplit(ItemStack item, Collection<String> lines, boolean keepEmptyLines) {
         return addLegacyLore(item, legacyLines(splitLines(lines, keepEmptyLines)));
+    }
+
+    public static ItemStack name(ItemStack item, Component name) {
+        return editMeta(item, new MetaEditor() {
+            @Override
+            public void edit(ItemMeta meta) {
+                meta.setDisplayName(name == null ? null : LEGACY_SECTION.serialize(name));
+            }
+        });
+    }
+
+    public static ItemStack lore(ItemStack item, Component... lore) {
+        return loreComponents(item, lore == null ? null : Arrays.asList(lore));
+    }
+
+    public static ItemStack loreComponents(ItemStack item, Collection<? extends Component> lore) {
+        return setLegacyLore(item, legacyComponentLines(lore));
+    }
+
+    public static ItemStack addLore(ItemStack item, Component... lines) {
+        return addLoreComponents(item, lines == null ? null : Arrays.asList(lines));
+    }
+
+    public static ItemStack addLoreComponents(ItemStack item, Collection<? extends Component> lines) {
+        return addLegacyLore(item, legacyComponentLines(lines));
+    }
+
+    private static List<String> legacyComponentLines(Collection<? extends Component> lines) {
+        if (lines == null) {
+            return null;
+        }
+        List<String> legacy = new ArrayList<>();
+        for (Component line : lines) {
+            legacy.add(line == null ? null : LEGACY_SECTION.serialize(line));
+        }
+        return legacy;
     }
 
     private static ItemStack addLegacyLore(ItemStack item, final List<String> lines) {

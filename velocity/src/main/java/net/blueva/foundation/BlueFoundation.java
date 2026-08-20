@@ -55,11 +55,6 @@ public final class BlueFoundation {
         }
     }
 
-    public static class AdventureText extends net.blueva.foundation.text.AdventureText {
-        private AdventureText() {
-        }
-    }
-
     public static class Messages extends net.blueva.foundation.messages.Messages {
         private Messages() {
         }

@@ -7,8 +7,6 @@ import net.blueva.foundation.text.serializer.PlainSerializer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -27,10 +25,7 @@ import java.time.Duration;
  */
 final class AdventureTextProvider implements TextProvider {
 
-    private final MiniMessage miniMessage;
-
     public AdventureTextProvider(JavaPlugin plugin) {
-        this.miniMessage = MiniMessage.miniMessage();
     }
 
     void close() {
@@ -110,17 +105,7 @@ final class AdventureTextProvider implements TextProvider {
     }
 
     Component parse(String message) {
-        if (message == null || message.trim().isEmpty()) {
-            return Component.empty();
-        }
-        if (looksLegacy(message)) {
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
-        }
-        return miniMessage.deserialize(message);
-    }
-
-    private static boolean looksLegacy(String message) {
-        return message.indexOf('&') >= 0 && message.indexOf('<') < 0;
+        return AdventureText.component(message);
     }
 
     private static Duration ticks(int ticks) {
