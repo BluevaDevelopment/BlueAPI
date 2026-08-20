@@ -20,6 +20,7 @@
   <img alt="Version" src="https://img.shields.io/badge/version-26.31-blue">
   <img alt="Java" src="https://img.shields.io/badge/Java-8+-ED8B00?logo=openjdk&logoColor=white">
   <img alt="Build" src="https://img.shields.io/badge/build-Gradle-02303A?logo=gradle&logoColor=white">
+  <img alt="License" src="https://img.shields.io/badge/license-GPL--3.0-blue">
 </p>
 
 BlueFoundation focuses on keeping reusable plugin infrastructure small, explicit, and easy to access from a single namespace:
@@ -113,3 +114,7 @@ dependencies { compileOnly("net.blueva.foundation:BlueFoundation:26.31") } // sw
 ## Goal
 
 BlueFoundation aims to be a common foundation for Blueva plugins: small, clear, and ready to grow with multiversion tools and reusable systems - across Bukkit/Spigot/Paper, Velocity, BungeeCord, and Hytale.
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).
