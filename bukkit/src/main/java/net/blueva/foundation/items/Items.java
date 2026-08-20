@@ -4,7 +4,6 @@ import net.blueva.foundation.materials.LegacyMaterials;
 import net.blueva.foundation.materials.Materials;
 import net.blueva.foundation.text.Text;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -40,8 +39,6 @@ import java.util.Base64;
  * the only format {@link ItemMeta} accepts on every supported version.
  */
 public class Items {
-
-    private static final LegacyComponentSerializer LEGACY_SECTION = LegacyComponentSerializer.legacySection();
 
     protected Items() {
     }
@@ -290,7 +287,7 @@ public class Items {
         return editMeta(item, new MetaEditor() {
             @Override
             public void edit(ItemMeta meta) {
-                meta.setDisplayName(name == null ? null : LEGACY_SECTION.serialize(name));
+                meta.setDisplayName(name == null ? null : serializeLegacy(name));
             }
         });
     }
@@ -317,9 +314,29 @@ public class Items {
         }
         List<String> legacy = new ArrayList<>();
         for (Component line : lines) {
-            legacy.add(line == null ? null : LEGACY_SECTION.serialize(line));
+            legacy.add(line == null ? null : serializeLegacy(line));
         }
         return legacy;
+    }
+
+    /**
+     * Serializes an Adventure component to a legacy-formatted string,
+     * resolved reflectively rather than through a static import: Adventure
+     * is compileOnly here and not guaranteed at runtime (Paper ships it,
+     * plain Spigot 1.8-1.20 does not), so nothing in this class may touch it
+     * outside of a caller actually invoking one of the {@link Component}
+     * overloads above - see {@code Sounds#legacyValueOf} for the same
+     * reasoning applied to {@code Sound}.
+     */
+    private static String serializeLegacy(Component component) {
+        try {
+            Class<?> serializerClass = Class.forName("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer");
+            Object serializer = serializerClass.getMethod("legacySection").invoke(null);
+            Method serialize = serializerClass.getMethod("serialize", Component.class);
+            return (String) serialize.invoke(serializer, component);
+        } catch (Throwable e) {
+            return null;
+        }
     }
 
     private static ItemStack addLegacyLore(ItemStack item, final List<String> lines) {
