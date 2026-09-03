@@ -57,6 +57,8 @@ hytale/       -> BlueFoundation-Hytale
 | `Sounds` | ✅ | ❌ | ❌ | ✅ |
 | `Music` | ✅ | ❌ | ❌ | ⚠️ MIDI only |
 | `Players` | ✅ | ⚠️ partial | ⚠️ partial | ❌ |
+| `Menus` / `Forms` | ✅ | ❌ | ❌ | ❌ |
+| `Dialogs` | ⚠️ 1.21.6+ | ❌ | ❌ | ❌ |
 | `Materials`, `Items`, `Entities`, `NPCs`, `Particles`, `Attributes`, `GameRules`, `Inventories`, `Hologram`, `Blocks`, `Worlds` | ✅ | ❌ | ❌ | ❌ |
 
 ## Installation
@@ -103,7 +105,7 @@ dependencies { compileOnly("net.blueva.foundation:BlueFoundation:26.32") } // sw
 
 **Bukkit / Spigot / Paper**
 
-[Dependencies](docs/dependencies.md) · [Version](docs/version.md) · [Reflection](docs/reflection.md) · [Materials and sounds](docs/materials-sounds.md) · [Music](docs/music.md) · [Entities](docs/entities.md) · [Items](docs/items.md) · [Text and messages](docs/text-messages.md) · [Scheduler](docs/scheduler.md) · [Commands](docs/commands.md) · [Configs](docs/configs.md) · [NPCs](docs/npcs.md) · [Scoreboard](docs/scoreboards.md) · [Multi-version events](docs/events.md) · [Particles](docs/particles.md) · [Attributes](docs/attributes.md) · [Game rules](docs/gamerules.md) · [Boss bars](docs/bossbars.md) · [Worlds, blocks, players and inventories](docs/world-players.md)
+[Dependencies](docs/dependencies.md) · [Version](docs/version.md) · [Reflection](docs/reflection.md) · [Materials and sounds](docs/materials-sounds.md) · [Music](docs/music.md) · [Entities](docs/entities.md) · [Items](docs/items.md) · [Text and messages](docs/text-messages.md) · [Scheduler](docs/scheduler.md) · [Commands](docs/commands.md) · [Configs](docs/configs.md) · [NPCs](docs/npcs.md) · [Scoreboard](docs/scoreboards.md) · [Multi-version events](docs/events.md) · [Particles](docs/particles.md) · [Attributes](docs/attributes.md) · [Game rules](docs/gamerules.md) · [Boss bars](docs/bossbars.md) · [Worlds, blocks, players and inventories](docs/world-players.md) · [Menus, forms and dialogs](docs/menus.md)
 
 **Proxies and Hytale**
 

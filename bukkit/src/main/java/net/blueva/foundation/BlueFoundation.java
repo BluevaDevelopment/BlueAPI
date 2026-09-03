@@ -219,6 +219,26 @@ public final class BlueFoundation {
         }
     }
 
+    public static class Menus extends net.blueva.foundation.menus.Menus {
+        private Menus() {
+        }
+    }
+
+    public static class Forms extends net.blueva.foundation.menus.bedrock.Forms {
+        private Forms() {
+        }
+    }
+
+    public static class Bedrock extends net.blueva.foundation.menus.bedrock.Bedrock {
+        private Bedrock() {
+        }
+    }
+
+    public static class Dialogs extends net.blueva.foundation.menus.dialogs.Dialogs {
+        private Dialogs() {
+        }
+    }
+
     public static class Scoreboards {
         private Scoreboards() {
         }
