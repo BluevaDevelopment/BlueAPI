@@ -138,7 +138,7 @@ public final class BlueFoundation {
     /**
      * Injects files directly into the calling plugin's own running jar - the
      * one mechanism Hytale asset registration is known to actually work
-     * through in practice (proven in production by BlueArcade's item sync).
+     * through in practice (proven in production).
      * Changes only take effect after a server restart. Generic on purpose:
      * BlueFoundation itself has no opinion on what gets written where - see
      * {@link net.blueva.foundation.music.InstrumentSounds} for one
