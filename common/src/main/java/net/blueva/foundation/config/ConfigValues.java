@@ -112,6 +112,8 @@ final class ConfigValues {
     }
 
 
+    private static final String YAML_INDICATORS = "-?:,[]{}#&*!|>'\"%@`<\u00a7";
+
     private static String unquoteIfQuoted(String value) {
         return isQuoted(value) ? unquote(value) : value;
     }
@@ -683,8 +685,10 @@ final class ConfigValues {
         if ("true".equals(lower) || "false".equals(lower) || "null".equals(lower) || "~".equals(value)) {
             return true;
         }
-        if (value.startsWith(" ") || value.endsWith(" ") || value.startsWith("[") || value.startsWith("{")
-                || value.startsWith("#") || value.startsWith("<") || value.startsWith("&") || value.startsWith("§")
+        if (startsWithIndicator(value.charAt(0))) {
+            return true;
+        }
+        if (value.startsWith(" ") || value.endsWith(" ")
                 || value.contains(":") || value.contains(" #") || value.contains("\n")
                 || value.indexOf('\t') >= 0 || value.indexOf('"') >= 0
                 || value.indexOf('[') >= 0 || value.indexOf(']') >= 0
@@ -697,6 +701,16 @@ final class ConfigValues {
         } catch (NumberFormatException ignored) {
             return false;
         }
+    }
+
+    /**
+     * Characters YAML reads as an indicator when a plain scalar begins with them.
+     *
+     * <p>A value such as "- do not do this" or "*emphasis*" is a valid string, but written
+     * unquoted it comes back as a nested sequence or an alias reference, so it has to be quoted.
+     */
+    private static boolean startsWithIndicator(char first) {
+        return YAML_INDICATORS.indexOf(first) >= 0;
     }
 
     static boolean isQuoted(String value) {
