@@ -449,6 +449,32 @@ final class YamlConfigCodec implements ConfigCodec {
         return map;
     }
 
+    /**
+     * Returns the block scalar style a line opens, or 0 when it opens none.
+     *
+     * <p>Accepts the chomping indicators, so "key: |-" and "key: >+" are recognised as well as
+     * the bare "key: |" and "key: >".
+     */
+    private char blockScalarStyle(String trimmed) {
+        int length = trimmed.length();
+        if (length < 3) {
+            return 0;
+        }
+        int end = length - 1;
+        char last = trimmed.charAt(end);
+        if (last == '-' || last == '+') {
+            end--;
+            if (end < 2) {
+                return 0;
+            }
+            last = trimmed.charAt(end);
+        }
+        if (last != '|' && last != '>') {
+            return 0;
+        }
+        return trimmed.charAt(end - 1) == ' ' && trimmed.charAt(end - 2) == ':' ? last : 0;
+    }
+
     private String collapseBlockScalars(String text) {
         if (text == null || text.isEmpty()) {
             return text;
@@ -458,11 +484,14 @@ final class YamlConfigCodec implements ConfigCodec {
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             String trimmed = line.trim();
-            if (!(trimmed.endsWith(": |") || trimmed.endsWith(": >"))) {
+            char style = blockScalarStyle(trimmed);
+            if (style == 0) {
                 output.append(line).append('\n');
                 continue;
             }
-            boolean folded = trimmed.endsWith(": >");
+            boolean folded = style == '>';
+            boolean strip = trimmed.endsWith("-");
+            boolean keep = trimmed.endsWith("+");
             int baseIndent = indent(line);
             String prefix = line.substring(0, line.lastIndexOf(':') + 1);
             StringBuilder value = new StringBuilder();
@@ -484,7 +513,16 @@ final class YamlConfigCodec implements ConfigCodec {
                 }
                 i++;
             }
-            output.append(prefix).append(" \"").append(ConfigValues.escape(value.toString())).append("\"\n");
+            String collapsed = value.toString();
+            if (!folded && !keep) {
+                int end = collapsed.length();
+                while (end > 0 && collapsed.charAt(end - 1) == '\n') {
+                    end--;
+                }
+                // "clip" keeps a single trailing break, "strip" keeps none.
+                collapsed = collapsed.substring(0, end) + (strip ? "" : "\n");
+            }
+            output.append(prefix).append(" \"").append(ConfigValues.escape(collapsed)).append("\"\n");
         }
         return output.toString();
     }
