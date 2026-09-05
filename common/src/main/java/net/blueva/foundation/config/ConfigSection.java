@@ -5,7 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/** Read/write view over a config section. */
+/**
+ * Read/write view over a config section.
+ *
+ * <p>Child arguments are paths, so a dot in them separates segments. A key that genuinely
+ * contains a dot has to be quoted, as it does everywhere else: {@code section.get("\"a.b\"")}.
+ */
 public final class ConfigSection {
 
     private final ConfigDocument document;
@@ -223,6 +228,9 @@ public final class ConfigSection {
         if (path.isEmpty()) {
             return childPath;
         }
-        return ConfigPath.joinLiteral(path, childPath);
+        // A dot separates path segments here, the same way it does on the document: quoting the
+        // whole argument instead would make "time.start" a key literally named "time.start",
+        // which reads a section differently from reading the same value off the document.
+        return ConfigPath.join(path, childPath);
     }
 }
