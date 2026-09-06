@@ -363,6 +363,39 @@ final class PaperDialogBackend implements DialogBackend {
         }
     }
 
+    /**
+     * {@code showDialog} on a player, whatever it takes.
+     *
+     * <p>Looked up by name and arity rather than by exact parameter type. The
+     * method is not Paper's own: it comes from Adventure's {@code Audience},
+     * and its parameter is {@code net.kyori.adventure.dialog.DialogLike} -
+     * which {@code io.papermc.paper.dialog.Dialog} implements. Asking for the
+     * method with {@code Dialog} as the parameter finds nothing, because the
+     * signature has to match exactly, and the whole backend then reports
+     * itself unavailable: a 1.21.6+ server that can draw a dialog perfectly
+     * well says it cannot, and every prompt falls back to chat.
+     *
+     * <p>By name and arity it keeps working whether the parameter is the
+     * interface, the class, or whatever it is renamed to next.
+     */
+    private Method showDialogMethod(Class<?> dialogClass) {
+        Method exact = Reflection.method(Player.class, "showDialog", dialogClass);
+        if (exact != null) {
+            return exact;
+        }
+        for (Method candidate : Player.class.getMethods()) {
+            if (!"showDialog".equals(candidate.getName())) {
+                continue;
+            }
+            Class<?>[] parameters = candidate.getParameterTypes();
+            if (parameters.length == 1 && parameters[0].isAssignableFrom(dialogClass)) {
+                candidate.setAccessible(true);
+                return candidate;
+            }
+        }
+        return null;
+    }
+
     private boolean resolve0() {
         Class<?> dialogClass = Reflection.findClass("io.papermc.paper.dialog.Dialog");
         Class<?> component = Reflection.findClass("net.kyori.adventure.text.Component");
@@ -372,7 +405,7 @@ final class PaperDialogBackend implements DialogBackend {
             return false;
         }
 
-        showDialog = Reflection.method(Player.class, "showDialog", dialogClass);
+        showDialog = showDialogMethod(dialogClass);
         if (showDialog == null) {
             return false;
         }
