@@ -31,6 +31,7 @@ public final class MenuButton {
     private final String image;
     private final boolean glow;
     private final boolean hideFlags;
+    private final boolean hideTooltip;
     private final List<String> enchantments;
     private final String visibleIf;
     private final List<MenuAction> actions;
@@ -47,6 +48,7 @@ public final class MenuButton {
         this.image = builder.image;
         this.glow = builder.glow;
         this.hideFlags = builder.hideFlags;
+        this.hideTooltip = builder.hideTooltip;
         this.enchantments = Collections.unmodifiableList(new ArrayList<String>(builder.enchantments));
         this.visibleIf = builder.visibleIf;
         this.actions = Collections.unmodifiableList(new ArrayList<MenuAction>(builder.actions));
@@ -136,6 +138,19 @@ public final class MenuButton {
      */
     public boolean hideFlags() {
         return hideFlags;
+    }
+
+    /**
+     * Whether to hide the tooltip box entirely.
+     *
+     * <p>A blank name removes the text; this removes the box. A filler pane
+     * wants both, or hovering the gap between two groups of buttons opens an
+     * empty window.
+     *
+     * @return whether the tooltip is hidden
+     */
+    public boolean hideTooltip() {
+        return hideTooltip;
     }
 
     /**
@@ -233,6 +248,7 @@ public final class MenuButton {
         private String image;
         private boolean glow;
         private boolean hideFlags;
+        private boolean hideTooltip;
         private final List<String> enchantments = new ArrayList<String>();
         private String visibleIf;
         private final List<MenuAction> actions = new ArrayList<MenuAction>();
@@ -379,6 +395,15 @@ public final class MenuButton {
          */
         public Builder hideFlags(boolean hideFlags) {
             this.hideFlags = hideFlags;
+            return this;
+        }
+
+        /**
+         * @param hideTooltip whether to hide the tooltip box entirely
+         * @return this builder
+         */
+        public Builder hideTooltip(boolean hideTooltip) {
+            this.hideTooltip = hideTooltip;
             return this;
         }
 

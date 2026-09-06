@@ -189,6 +189,8 @@ public final class MenuLoader {
                 .image(section.getString("image", null))
                 .glow(section.getBoolean("glow", false))
                 .hideFlags(section.getBoolean("hide-flags", section.getBoolean("hideFlags", false)))
+                .hideTooltip(section.getBoolean("hide-tooltip",
+                        section.getBoolean("hideTooltip", false)))
                 .enchantments(section.getStringList("enchantments"))
                 .visibleIf(section.contains("visible-if")
                         ? section.getString("visible-if")

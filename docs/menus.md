@@ -47,6 +47,12 @@ MenuDefinition menu = MenuDefinition.builder("warps")
 BlueFoundation.Menus.open(plugin, new MenuContext(player, menu));
 ```
 
+A button with no name, no lore and nothing to do is wallpaper, and its tooltip
+is hidden without being asked: hovering the gap between two groups of buttons
+should not open an empty window. `hide-tooltip: true` says so explicitly for
+anything else. It needs Minecraft 1.20.5 or later; on older servers a blank
+name still carries most of the effect.
+
 `material` takes several names and uses the first that exists on the running server, which is how
 one definition covers 1.8 through modern without a version branch. `image` is the icon beside the
 button on Bedrock and is ignored on Java; `material` is the item on Java and is ignored on Bedrock.
@@ -162,6 +168,7 @@ items:
     image: "https://example.com/spawn.png"
     glow: false
     hide-flags: true
+    hide-tooltip: false  # removes the box, not just the text
     enchantments: ["DURABILITY:1"]
     visible-if: "%some_placeholder%"
     actions:

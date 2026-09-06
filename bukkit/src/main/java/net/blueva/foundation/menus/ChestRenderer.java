@@ -233,7 +233,22 @@ final class ChestRenderer {
         if (button.hideFlags()) {
             builder.hideAllFlags();
         }
+        // A blank name removes the text; this removes the box. Asked for, or
+        // taken as read for a button with nothing to say and nothing to do -
+        // which is what a filler pane is, and hovering the gap between two
+        // groups of buttons should not open a window.
+        if (button.hideTooltip() || saysNothing(button)) {
+            builder.hideTooltip();
+        }
         return builder.build();
+    }
+
+    /** Whether this button is wallpaper: no text, and nothing to do. */
+    private static boolean saysNothing(MenuButton button) {
+        String name = button.name();
+        boolean blank = name == null || name.replaceAll("<[^>]*>", "").trim().isEmpty();
+        return blank && button.lore().isEmpty() && button.actions().isEmpty()
+                && button.handler() == null;
     }
 
     private static Material material(MenuButton button) {

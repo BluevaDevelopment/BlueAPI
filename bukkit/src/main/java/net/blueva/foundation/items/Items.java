@@ -229,6 +229,35 @@ public class Items {
         return inventory;
     }
 
+    /**
+     * Hides an item's tooltip box.
+     *
+     * <p>Reflective: {@code setHideTooltip} arrived in 1.20.5 and this library
+     * spans older servers, where nothing happens. Looked up on the
+     * {@link ItemMeta} interface rather than on the meta's own class, which is
+     * CraftBukkit's and not public - found there, the method is refused at
+     * invoke time.
+     *
+     * @param item the item to change
+     * @return the same item
+     */
+    public static ItemStack hideTooltip(ItemStack item) {
+        if (item == null) {
+            return null;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return item;
+        }
+        try {
+            ItemMeta.class.getMethod("setHideTooltip", boolean.class).invoke(meta, true);
+            item.setItemMeta(meta);
+        } catch (Throwable ignored) {
+            // Older than 1.20.5. A blank name still carries most of it.
+        }
+        return item;
+    }
+
     public static ItemStack name(ItemStack item, String name) {
         return editMeta(item, new MetaEditor() {
             @Override
@@ -1531,6 +1560,26 @@ public class Items {
 
         public Builder data(int data) {
             Items.durability(item, (short) data);
+            return this;
+        }
+
+        /**
+         * Hides the tooltip box entirely.
+         *
+         * <p>A blank name removes the *text*; this removes the box. Together
+         * they are what makes a filler pane read as wallpaper rather than as
+         * an item with nothing to say - hovering the gap between two groups of
+         * buttons should not open anything at all.
+         *
+         * <p>Reflective on purpose: {@code setHideTooltip} arrived in 1.20.5
+         * and this library spans older servers, where the call simply does
+         * nothing and the blank name still carries most of the effect. Looked
+         * up on the {@link ItemMeta} interface rather than on the meta's own
+         * class, which is CraftBukkit's and not public: found there, the
+         * method is refused at invoke time.
+         */
+        public Builder hideTooltip() {
+            Items.hideTooltip(item);
             return this;
         }
 
