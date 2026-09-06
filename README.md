@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-26.35-blue">
+  <img alt="Version" src="https://img.shields.io/badge/version-26.36-blue">
   <img alt="Java" src="https://img.shields.io/badge/Java-8+-ED8B00?logo=openjdk&logoColor=white">
   <img alt="Build" src="https://img.shields.io/badge/build-Gradle-02303A?logo=gradle&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/license-GPL--3.0-blue">
@@ -67,14 +67,14 @@ hytale/       -> BlueFoundation-Hytale
 
 | Platform | Artifact |
 |---|---|
-| Bukkit / Spigot / Paper | `net.blueva.foundation:BlueFoundation:26.35` |
-| Velocity | `net.blueva.foundation:BlueFoundation-Velocity:26.35` |
-| BungeeCord | `net.blueva.foundation:BlueFoundation-BungeeCord:26.35` |
-| Hytale | `net.blueva.foundation:BlueFoundation-Hytale:26.35` |
+| Bukkit / Spigot / Paper | `net.blueva.foundation:BlueFoundation:26.36` |
+| Velocity | `net.blueva.foundation:BlueFoundation-Velocity:26.36` |
+| BungeeCord | `net.blueva.foundation:BlueFoundation-BungeeCord:26.36` |
+| Hytale | `net.blueva.foundation:BlueFoundation-Hytale:26.36` |
 
 ```kotlin
 repositories { maven("https://repo.blueva.net/releases") }
-dependencies { compileOnly("net.blueva.foundation:BlueFoundation:26.35") } // swap the artifact id above for other platforms
+dependencies { compileOnly("net.blueva.foundation:BlueFoundation:26.36") } // swap the artifact id above for other platforms
 ```
 
 <details>
@@ -92,7 +92,7 @@ dependencies { compileOnly("net.blueva.foundation:BlueFoundation:26.35") } // sw
     <dependency>
         <groupId>net.blueva.foundation</groupId>
         <artifactId>BlueFoundation</artifactId>
-        <version>26.35</version>
+        <version>26.36</version>
     </dependency>
 </dependencies>
 ```
